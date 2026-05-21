@@ -4,7 +4,10 @@ import com.example.futbet.dto.request.CreatePhaseRequest;
 import com.example.futbet.dto.request.MovePhaseRequest;
 import com.example.futbet.dto.request.UpdatePhaseRequest;
 import com.example.futbet.dto.response.PhaseResponse;
+import com.example.futbet.dto.response.StandingsResponse;
+import com.example.futbet.service.PhaseFinalizeService;
 import com.example.futbet.service.PhaseService;
+import com.example.futbet.service.StandingsService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +29,17 @@ import java.util.UUID;
 public class PhaseController {
 
     private final PhaseService phaseService;
+    private final StandingsService standingsService;
+    private final PhaseFinalizeService finalizeService;
 
-    public PhaseController(PhaseService phaseService) {
+    public PhaseController(
+            PhaseService phaseService,
+            StandingsService standingsService,
+            PhaseFinalizeService finalizeService
+    ) {
         this.phaseService = phaseService;
+        this.standingsService = standingsService;
+        this.finalizeService = finalizeService;
     }
 
     @PostMapping
@@ -90,5 +101,22 @@ public class PhaseController {
     ) {
         phaseService.delete(UUID.fromString(ownerPublicId), tournamentId, phaseId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{phaseId}/standings")
+    public ResponseEntity<StandingsResponse> standings(
+            @PathVariable UUID tournamentId,
+            @PathVariable UUID phaseId
+    ) {
+        return ResponseEntity.ok(standingsService.compute(tournamentId, phaseId));
+    }
+
+    @PostMapping("/{phaseId}/finalize")
+    public ResponseEntity<StandingsResponse> finalizePhase(
+            @AuthenticationPrincipal String ownerPublicId,
+            @PathVariable UUID tournamentId,
+            @PathVariable UUID phaseId
+    ) {
+        return ResponseEntity.ok(finalizeService.finalize(tournamentId, phaseId));
     }
 }

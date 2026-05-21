@@ -1,8 +1,6 @@
 package com.example.futbet.entity;
 
-import com.example.futbet.enums.MatchGenerationMode;
-import com.example.futbet.enums.MatchLegMode;
-import com.example.futbet.enums.TournamentPhaseType;
+import com.example.futbet.enums.MatchStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,7 +14,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,16 +24,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "tournament_phases",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"tournament_id", "position"})
-)
+@Table(name = "tournament_matches")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TournamentPhase {
+public class Match {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,35 +40,39 @@ public class TournamentPhase {
     private UUID publicId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "tournament_id", nullable = false, updatable = false)
-    private Tournament tournament;
+    @JoinColumn(name = "phase_id", nullable = false, updatable = false)
+    private TournamentPhase phase;
 
-    @Column(nullable = false, length = 60)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private PhaseGroup group;
 
     @Column(nullable = false)
-    private int position;
+    private int round;
+
+    @Column(name = "tie_id", nullable = false)
+    private UUID tieId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "home_team_id", nullable = false)
+    private Team homeTeam;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "away_team_id", nullable = false)
+    private Team awayTeam;
+
+    @Column(name = "scheduled_at")
+    private Instant scheduledAt;
+
+    @Column(name = "home_score")
+    private Integer homeScore;
+
+    @Column(name = "away_score")
+    private Integer awayScore;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "phase_type", nullable = false, length = 15)
-    private TournamentPhaseType phaseType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "match_leg_mode", nullable = false, length = 15)
-    private MatchLegMode matchLegMode;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "match_generation_mode", nullable = false, length = 15)
-    private MatchGenerationMode matchGenerationMode;
-
-    @Column(name = "qualifiers_per_group")
-    private Integer qualifiersPerGroup;
-
-    @Column(name = "plays_inside_group_only")
-    private Boolean playsInsideGroupOnly;
-
-    @Column(name = "has_third_place", nullable = false)
-    private boolean hasThirdPlace;
+    @Column(nullable = false, length = 15)
+    private MatchStatus status;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -86,6 +84,12 @@ public class TournamentPhase {
     void onCreate() {
         if (publicId == null) {
             publicId = UUID.randomUUID();
+        }
+        if (tieId == null) {
+            tieId = UUID.randomUUID();
+        }
+        if (status == null) {
+            status = MatchStatus.SCHEDULED;
         }
         Instant now = Instant.now();
         createdAt = now;

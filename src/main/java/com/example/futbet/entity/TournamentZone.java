@@ -1,8 +1,6 @@
 package com.example.futbet.entity;
 
-import com.example.futbet.enums.MatchGenerationMode;
-import com.example.futbet.enums.MatchLegMode;
-import com.example.futbet.enums.TournamentPhaseType;
+import com.example.futbet.enums.ZoneSelectionMode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,15 +26,15 @@ import java.util.UUID;
 
 @Entity
 @Table(
-        name = "tournament_phases",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"tournament_id", "position"})
+        name = "tournament_zones",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"phase_id", "position"})
 )
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TournamentPhase {
+public class TournamentZone {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,35 +44,31 @@ public class TournamentPhase {
     private UUID publicId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "tournament_id", nullable = false, updatable = false)
-    private Tournament tournament;
+    @JoinColumn(name = "phase_id", nullable = false, updatable = false)
+    private TournamentPhase phase;
 
     @Column(nullable = false, length = 60)
     private String name;
 
+    @Column(name = "from_position", nullable = false)
+    private int fromPosition;
+
+    @Column(name = "to_position", nullable = false)
+    private int toPosition;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "selection_mode", nullable = false, length = 15)
+    private ZoneSelectionMode selectionMode;
+
+    @Column(name = "best_ranked_count")
+    private Integer bestRankedCount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "next_phase_id")
+    private TournamentPhase nextPhase;
+
     @Column(nullable = false)
     private int position;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "phase_type", nullable = false, length = 15)
-    private TournamentPhaseType phaseType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "match_leg_mode", nullable = false, length = 15)
-    private MatchLegMode matchLegMode;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "match_generation_mode", nullable = false, length = 15)
-    private MatchGenerationMode matchGenerationMode;
-
-    @Column(name = "qualifiers_per_group")
-    private Integer qualifiersPerGroup;
-
-    @Column(name = "plays_inside_group_only")
-    private Boolean playsInsideGroupOnly;
-
-    @Column(name = "has_third_place", nullable = false)
-    private boolean hasThirdPlace;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

@@ -10,7 +10,9 @@ import com.example.futbet.enums.TournamentPhaseType;
 import com.example.futbet.exception.GroupNameAlreadyInUseException;
 import com.example.futbet.exception.GroupOnlyAllowedInGroupsPhaseException;
 import com.example.futbet.exception.PhaseGroupNotFoundException;
+import com.example.futbet.exception.PhaseHasMatchesException;
 import com.example.futbet.mapper.PhaseGroupMapper;
+import com.example.futbet.repository.MatchRepository;
 import com.example.futbet.repository.PhaseGroupRepository;
 import com.example.futbet.repository.PhaseTeamRepository;
 import org.springframework.stereotype.Service;
@@ -25,17 +27,20 @@ public class PhaseGroupService {
     private final PhaseService phaseService;
     private final PhaseGroupRepository groupRepository;
     private final PhaseTeamRepository phaseTeamRepository;
+    private final MatchRepository matchRepository;
     private final PhaseGroupMapper mapper;
 
     public PhaseGroupService(
             PhaseService phaseService,
             PhaseGroupRepository groupRepository,
             PhaseTeamRepository phaseTeamRepository,
+            MatchRepository matchRepository,
             PhaseGroupMapper mapper
     ) {
         this.phaseService = phaseService;
         this.groupRepository = groupRepository;
         this.phaseTeamRepository = phaseTeamRepository;
+        this.matchRepository = matchRepository;
         this.mapper = mapper;
     }
 
@@ -106,6 +111,9 @@ public class PhaseGroupService {
         Tournament tournament = phaseService.loadOwnedEditable(ownerPublicId, tournamentPublicId);
         TournamentPhase phase = phaseService.loadPhase(tournament, phasePublicId);
         PhaseGroup group = loadGroup(phase.getPublicId(), groupPublicId);
+        if (matchRepository.countByGroupId(group.getId()) > 0) {
+            throw new PhaseHasMatchesException("group");
+        }
         groupRepository.delete(group);
     }
 

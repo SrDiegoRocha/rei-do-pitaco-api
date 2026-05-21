@@ -11,10 +11,12 @@ import com.example.futbet.entity.TournamentTeam;
 import com.example.futbet.enums.TournamentPhaseType;
 import com.example.futbet.exception.NoGroupsToDrawException;
 import com.example.futbet.exception.PhaseGroupNotFoundException;
+import com.example.futbet.exception.PhaseHasMatchesException;
 import com.example.futbet.exception.PhaseTeamNotFoundException;
 import com.example.futbet.exception.TeamAlreadyInTournamentException;
 import com.example.futbet.exception.TeamNotInTournamentException;
 import com.example.futbet.mapper.PhaseTeamMapper;
+import com.example.futbet.repository.MatchRepository;
 import com.example.futbet.repository.PhaseGroupRepository;
 import com.example.futbet.repository.PhaseTeamRepository;
 import com.example.futbet.repository.TournamentTeamRepository;
@@ -34,6 +36,7 @@ public class PhaseTeamService {
     private final PhaseGroupRepository groupRepository;
     private final PhaseTeamRepository phaseTeamRepository;
     private final TournamentTeamRepository tournamentTeamRepository;
+    private final MatchRepository matchRepository;
     private final PhaseTeamMapper mapper;
     private final SecureRandom random = new SecureRandom();
 
@@ -42,12 +45,14 @@ public class PhaseTeamService {
             PhaseGroupRepository groupRepository,
             PhaseTeamRepository phaseTeamRepository,
             TournamentTeamRepository tournamentTeamRepository,
+            MatchRepository matchRepository,
             PhaseTeamMapper mapper
     ) {
         this.phaseService = phaseService;
         this.groupRepository = groupRepository;
         this.phaseTeamRepository = phaseTeamRepository;
         this.tournamentTeamRepository = tournamentTeamRepository;
+        this.matchRepository = matchRepository;
         this.mapper = mapper;
     }
 
@@ -120,6 +125,9 @@ public class PhaseTeamService {
         PhaseTeam phaseTeam = phaseTeamRepository
                 .findByPhasePublicIdAndTeamPublicId(phasePublicId, teamPublicId)
                 .orElseThrow(PhaseTeamNotFoundException::new);
+        if (matchRepository.countByPhaseAndTeam(phase.getId(), phaseTeam.getTeam().getId()) > 0) {
+            throw new PhaseHasMatchesException("team from phase");
+        }
         phaseTeamRepository.delete(phaseTeam);
     }
 

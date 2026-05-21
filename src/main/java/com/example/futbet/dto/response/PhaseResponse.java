@@ -16,6 +16,7 @@ public record PhaseResponse(
         MatchGenerationMode matchGenerationMode,
         Integer qualifiersPerGroup,
         Boolean playsInsideGroupOnly,
+        boolean hasThirdPlace,
         long groupCount,
         long teamCount,
         Instant createdAt,

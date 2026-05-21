@@ -11,10 +11,12 @@ import com.example.futbet.entity.TournamentTeam;
 import com.example.futbet.enums.TournamentPhaseType;
 import com.example.futbet.enums.TournamentStatus;
 import com.example.futbet.exception.NotTournamentOwnerException;
+import com.example.futbet.exception.PhaseHasMatchesException;
 import com.example.futbet.exception.PhaseNotFoundException;
 import com.example.futbet.exception.PhaseStructureLockedException;
 import com.example.futbet.exception.TournamentNotFoundException;
 import com.example.futbet.mapper.PhaseMapper;
+import com.example.futbet.repository.MatchRepository;
 import com.example.futbet.repository.PhaseGroupRepository;
 import com.example.futbet.repository.PhaseTeamRepository;
 import com.example.futbet.repository.TournamentPhaseRepository;
@@ -35,6 +37,7 @@ public class PhaseService {
     private final PhaseGroupRepository phaseGroupRepository;
     private final PhaseTeamRepository phaseTeamRepository;
     private final TournamentTeamRepository tournamentTeamRepository;
+    private final MatchRepository matchRepository;
     private final PhaseMapper phaseMapper;
 
     public PhaseService(
@@ -43,6 +46,7 @@ public class PhaseService {
             PhaseGroupRepository phaseGroupRepository,
             PhaseTeamRepository phaseTeamRepository,
             TournamentTeamRepository tournamentTeamRepository,
+            MatchRepository matchRepository,
             PhaseMapper phaseMapper
     ) {
         this.tournamentRepository = tournamentRepository;
@@ -50,6 +54,7 @@ public class PhaseService {
         this.phaseGroupRepository = phaseGroupRepository;
         this.phaseTeamRepository = phaseTeamRepository;
         this.tournamentTeamRepository = tournamentTeamRepository;
+        this.matchRepository = matchRepository;
         this.phaseMapper = phaseMapper;
     }
 
@@ -75,6 +80,10 @@ public class PhaseService {
                         request.phaseType() == TournamentPhaseType.GROUPS
                                 ? request.playsInsideGroupOnly()
                                 : null
+                )
+                .hasThirdPlace(
+                        request.phaseType() == TournamentPhaseType.KNOCKOUT
+                                && Boolean.TRUE.equals(request.hasThirdPlace())
                 )
                 .build();
 
@@ -129,6 +138,10 @@ public class PhaseService {
                         ? request.playsInsideGroupOnly()
                         : null
         );
+        phase.setHasThirdPlace(
+                request.phaseType() == TournamentPhaseType.KNOCKOUT
+                        && Boolean.TRUE.equals(request.hasThirdPlace())
+        );
 
         return toResponse(phaseRepository.saveAndFlush(phase));
     }
@@ -169,6 +182,9 @@ public class PhaseService {
     public void delete(UUID ownerPublicId, UUID tournamentPublicId, UUID phasePublicId) {
         Tournament tournament = loadOwnedEditable(ownerPublicId, tournamentPublicId);
         TournamentPhase phase = loadPhase(tournament, phasePublicId);
+        if (matchRepository.countByPhaseId(phase.getId()) > 0) {
+            throw new PhaseHasMatchesException("phase");
+        }
         int removedPosition = phase.getPosition();
 
         phaseRepository.delete(phase);
@@ -189,6 +205,18 @@ public class PhaseService {
         TournamentStatus status = tournament.getStatus();
         if (status == TournamentStatus.IN_PROGRESS || status == TournamentStatus.FINISHED) {
             throw new PhaseStructureLockedException(status);
+        }
+        return tournament;
+    }
+
+    Tournament loadOwnedNotFinished(UUID ownerPublicId, UUID tournamentPublicId) {
+        Tournament tournament = tournamentRepository.findByPublicIdAndActiveTrue(tournamentPublicId)
+                .orElseThrow(TournamentNotFoundException::new);
+        if (!tournament.getOwner().getPublicId().equals(ownerPublicId)) {
+            throw new NotTournamentOwnerException();
+        }
+        if (tournament.getStatus() == TournamentStatus.FINISHED) {
+            throw new PhaseStructureLockedException(tournament.getStatus());
         }
         return tournament;
     }

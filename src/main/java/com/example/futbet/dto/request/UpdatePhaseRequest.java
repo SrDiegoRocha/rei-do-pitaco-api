@@ -14,6 +14,7 @@ public record UpdatePhaseRequest(
         @NotNull MatchLegMode matchLegMode,
         @NotNull MatchGenerationMode matchGenerationMode,
         @Min(1) Integer qualifiersPerGroup,
-        Boolean playsInsideGroupOnly
+        Boolean playsInsideGroupOnly,
+        Boolean hasThirdPlace
 ) {
 }
