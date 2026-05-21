@@ -12,7 +12,8 @@
       "Bash(./mvnw.cmd -DskipTests compile)",
       "Bash(echo \"exit=$?\")",
       "Bash(./mvnw.cmd -q -DskipTests spring-boot:run)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/actuator/health)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/actuator/health)",
+      "PowerShell(Get-NetTCPConnection *)"
     ]
   }
 }
