@@ -41,6 +41,7 @@ public class MatchService {
     private final PhaseTeamRepository phaseTeamRepository;
     private final MatchRepository matchRepository;
     private final MatchMapper mapper;
+    private final PredictionService predictionService;
 
     public MatchService(
             TournamentRepository tournamentRepository,
@@ -48,7 +49,8 @@ public class MatchService {
             PhaseGroupRepository groupRepository,
             PhaseTeamRepository phaseTeamRepository,
             MatchRepository matchRepository,
-            MatchMapper mapper
+            MatchMapper mapper,
+            PredictionService predictionService
     ) {
         this.tournamentRepository = tournamentRepository;
         this.phaseRepository = phaseRepository;
@@ -56,6 +58,7 @@ public class MatchService {
         this.phaseTeamRepository = phaseTeamRepository;
         this.matchRepository = matchRepository;
         this.mapper = mapper;
+        this.predictionService = predictionService;
     }
 
     @Transactional
@@ -181,11 +184,23 @@ public class MatchService {
         if (match.getStatus() == MatchStatus.CANCELLED) {
             throw new MatchResultNotAllowedException("Cannot set result on a cancelled match");
         }
+        if (match.getScheduledAt() == null) {
+            throw new MatchResultNotAllowedException(
+                    "Match has no scheduled time; set it before lançar result"
+            );
+        }
+        if (java.time.Instant.now().isBefore(match.getScheduledAt())) {
+            throw new MatchResultNotAllowedException(
+                    "Results can only be set after the prediction deadline (scheduledAt)"
+            );
+        }
 
         match.setHomeScore(request.homeScore());
         match.setAwayScore(request.awayScore());
         match.setStatus(MatchStatus.COMPLETED);
-        return mapper.toResponse(matchRepository.saveAndFlush(match));
+        Match saved = matchRepository.saveAndFlush(match);
+        predictionService.recalculatePointsFor(saved);
+        return mapper.toResponse(saved);
     }
 
     @Transactional
@@ -202,6 +217,7 @@ public class MatchService {
         match.setStatus(MatchStatus.CANCELLED);
         match.setHomeScore(null);
         match.setAwayScore(null);
+        predictionService.zeroPointsFor(match);
         return mapper.toResponse(matchRepository.saveAndFlush(match));
     }
 

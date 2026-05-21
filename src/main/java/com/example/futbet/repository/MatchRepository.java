@@ -16,6 +16,8 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     Optional<Match> findByPublicIdAndPhasePublicId(UUID matchPublicId, UUID phasePublicId);
 
+    Optional<Match> findByPublicId(UUID publicId);
+
     List<Match> findAllByPhasePublicId(UUID phasePublicId);
 
     List<Match> findAllByPhasePublicIdAndRound(UUID phasePublicId, int round);
