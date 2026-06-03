@@ -83,16 +83,21 @@ public class StandingsService {
                 .findByPublicIdAndTournamentPublicId(phasePublicId, tournament.getPublicId())
                 .orElseThrow(PhaseNotFoundException::new);
 
+        // Times e partidas da fase: buscados UMA vez (com fetch join) e reutilizados por grupo.
+        // Buscar dentro do loop de grupos multiplicava as idas ao banco — caro com banco remoto.
+        List<PhaseTeam> phaseTeams = phaseTeamRepository.findAllByPhasePublicId(phasePublicId);
+        List<Match> allMatches = matchRepository.findAllByPhasePublicId(phasePublicId);
+
         // 1. Calcula a tabela ordenada de cada grupo (ou bloco único em ROUND_ROBIN).
         List<GroupTable> tables = new ArrayList<>();
         if (phase.getPhaseType() == TournamentPhaseType.GROUPS) {
             List<PhaseGroup> phaseGroups = groupRepository
                     .findAllByPhasePublicIdOrderByPositionAsc(phasePublicId);
             for (PhaseGroup group : phaseGroups) {
-                tables.add(new GroupTable(group, orderedTable(tournament, phase, group)));
+                tables.add(new GroupTable(group, orderedTable(tournament, group, phaseTeams, allMatches)));
             }
         } else {
-            tables.add(new GroupTable(null, orderedTable(tournament, phase, null)));
+            tables.add(new GroupTable(null, orderedTable(tournament, null, phaseTeams, allMatches)));
         }
 
         // 2. Resolve as zonas: por posição (ALL) e os classificados de cada zona BEST_RANKED.
@@ -207,10 +212,10 @@ public class StandingsService {
 
     private List<StandingAccumulator> orderedTable(
             Tournament tournament,
-            TournamentPhase phase,
-            PhaseGroup group
+            PhaseGroup group,
+            List<PhaseTeam> phaseTeams,
+            List<Match> allMatches
     ) {
-        List<PhaseTeam> phaseTeams = phaseTeamRepository.findAllByPhasePublicId(phase.getPublicId());
         List<PhaseTeam> teams = phaseTeams.stream()
                 .filter(pt -> {
                     if (group == null) return true;
@@ -223,7 +228,6 @@ public class StandingsService {
             table.put(pt.getTeam().getId(), new StandingAccumulator(pt.getTeam()));
         }
 
-        List<Match> allMatches = matchRepository.findAllByPhasePublicId(phase.getPublicId());
         for (Match match : allMatches) {
             if (match.getStatus() != MatchStatus.COMPLETED) {
                 continue;

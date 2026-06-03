@@ -18,11 +18,21 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     Optional<Match> findByPublicId(UUID publicId);
 
-    List<Match> findAllByPhasePublicId(UUID phasePublicId);
+    @Query("""
+            SELECT m FROM Match m
+            JOIN FETCH m.homeTeam
+            JOIN FETCH m.awayTeam
+            LEFT JOIN FETCH m.group
+            WHERE m.phase.publicId = :phasePublicId
+            """)
+    List<Match> findAllByPhasePublicId(@Param("phasePublicId") UUID phasePublicId);
 
     @Query("""
             SELECT m FROM Match m
             JOIN m.phase p
+            JOIN FETCH m.homeTeam
+            JOIN FETCH m.awayTeam
+            LEFT JOIN FETCH m.group
             WHERE p.tournament.publicId = :tournamentPublicId
             ORDER BY p.position ASC,
                      COALESCE(m.scheduledAt, m.createdAt) ASC,
@@ -30,9 +40,28 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             """)
     List<Match> findAllByTournamentPublicIdOrdered(@Param("tournamentPublicId") UUID tournamentPublicId);
 
-    List<Match> findAllByPhasePublicIdAndRound(UUID phasePublicId, int round);
+    @Query("""
+            SELECT m FROM Match m
+            JOIN FETCH m.homeTeam
+            JOIN FETCH m.awayTeam
+            LEFT JOIN FETCH m.group
+            WHERE m.phase.publicId = :phasePublicId
+              AND m.round = :round
+            """)
+    List<Match> findAllByPhasePublicIdAndRound(@Param("phasePublicId") UUID phasePublicId, @Param("round") int round);
 
-    List<Match> findAllByPhasePublicIdAndGroupPublicId(UUID phasePublicId, UUID groupPublicId);
+    @Query("""
+            SELECT m FROM Match m
+            JOIN FETCH m.homeTeam
+            JOIN FETCH m.awayTeam
+            JOIN FETCH m.group g
+            WHERE m.phase.publicId = :phasePublicId
+              AND g.publicId = :groupPublicId
+            """)
+    List<Match> findAllByPhasePublicIdAndGroupPublicId(
+            @Param("phasePublicId") UUID phasePublicId,
+            @Param("groupPublicId") UUID groupPublicId
+    );
 
     List<Match> findAllByTieId(UUID tieId);
 
