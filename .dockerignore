@@ -10,3 +10,6 @@ mvnw.cmd
 HELP.md
 *.md
 docker-compose.yml
+docker-compose.selfhost.yml
+.env
+.env.example

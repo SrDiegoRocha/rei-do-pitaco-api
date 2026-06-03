@@ -1,0 +1,23 @@
+# Self-host na própria máquina + Cloudflare Tunnel (sem abrir portas no roteador).
+# Túnel "locally-managed": criado via CLI (cloudflared tunnel login/create), sem
+# precisar do dashboard Zero Trust nem de cartão. As credenciais e o config.yml
+# vivem em %USERPROFILE%\.cloudflared e são montados no container.
+#   docker compose -f docker-compose.selfhost.yml up -d --build
+services:
+  api:
+    build: .
+    container_name: reidopitaco-api
+    restart: unless-stopped
+    env_file: .env
+    expose:
+      - "8080"
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: reidopitaco-tunnel
+    restart: unless-stopped
+    depends_on:
+      - api
+    volumes:
+      - ${USERPROFILE}/.cloudflared:/etc/cloudflared:ro
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
