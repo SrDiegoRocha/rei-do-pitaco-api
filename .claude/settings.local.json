@@ -38,7 +38,12 @@
       "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\diego\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -o clean compile 2>&1 | Select-String \"ERROR|BUILD\" | Select-Object -First 30)",
       "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\diego\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -o clean compile 2>&1 | Select-String \"ERROR|BUILD\" | Select-Object -First 20)",
       "WebFetch(domain:www.dicebear.com)",
-      "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\diego\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -o test-compile 2>&1 | Select-String \"ERROR|BUILD\" | Select-Object -First 20)"
+      "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\diego\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -o test-compile 2>&1 | Select-String \"ERROR|BUILD\" | Select-Object -First 20)",
+      "PowerShell(.\\\\mvnw.cmd -q compile)",
+      "PowerShell($j = Get-Command java -ErrorAction SilentlyContinue; if \\($j\\) { $j.Source }; if \\($env:JAVA_HOME\\) { \"JAVA_HOME=$env:JAVA_HOME\" } else { \"JAVA_HOME not set\" }; $dirs = @\\(\"C:\\\\Program Files\\\\Java\",\"C:\\\\Program Files\\\\Eclipse Adoptium\",\"$env:LOCALAPPDATA\\\\Programs\"\\); foreach \\($d in $dirs\\) { if \\(Test-Path $d\\) { Get-ChildItem $d -Directory -ErrorAction SilentlyContinue | Select-Object -Expand FullName } })",
+      "PowerShell($roots = @\\(\"C:\\\\Users\\\\diego\\\\AppData\\\\Local\\\\Programs\\\\IntelliJ IDEA\",\"C:\\\\Users\\\\diego\\\\AppData\\\\Local\\\\Programs\\\\IntelliJ IDEA 2\",\"$env:USERPROFILE\\\\.jdks\",\"C:\\\\Program Files\\\\JetBrains\"\\); foreach \\($r in $roots\\) { if \\(Test-Path $r\\) { Get-ChildItem -Path $r -Recurse -Filter java.exe -ErrorAction SilentlyContinue | Select-Object -First 5 -Expand FullName } })",
+      "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\diego\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -DskipTests clean compile)",
+      "PowerShell($b = New-Object byte[] 48; [System.Security.Cryptography.RandomNumberGenerator]::Create\\(\\).GetBytes\\($b\\); [Convert]::ToBase64String\\($b\\))"
     ]
   }
 }
