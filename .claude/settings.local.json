@@ -43,7 +43,29 @@
       "PowerShell($j = Get-Command java -ErrorAction SilentlyContinue; if \\($j\\) { $j.Source }; if \\($env:JAVA_HOME\\) { \"JAVA_HOME=$env:JAVA_HOME\" } else { \"JAVA_HOME not set\" }; $dirs = @\\(\"C:\\\\Program Files\\\\Java\",\"C:\\\\Program Files\\\\Eclipse Adoptium\",\"$env:LOCALAPPDATA\\\\Programs\"\\); foreach \\($d in $dirs\\) { if \\(Test-Path $d\\) { Get-ChildItem $d -Directory -ErrorAction SilentlyContinue | Select-Object -Expand FullName } })",
       "PowerShell($roots = @\\(\"C:\\\\Users\\\\diego\\\\AppData\\\\Local\\\\Programs\\\\IntelliJ IDEA\",\"C:\\\\Users\\\\diego\\\\AppData\\\\Local\\\\Programs\\\\IntelliJ IDEA 2\",\"$env:USERPROFILE\\\\.jdks\",\"C:\\\\Program Files\\\\JetBrains\"\\); foreach \\($r in $roots\\) { if \\(Test-Path $r\\) { Get-ChildItem -Path $r -Recurse -Filter java.exe -ErrorAction SilentlyContinue | Select-Object -First 5 -Expand FullName } })",
       "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\diego\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -DskipTests clean compile)",
-      "PowerShell($b = New-Object byte[] 48; [System.Security.Cryptography.RandomNumberGenerator]::Create\\(\\).GetBytes\\($b\\); [Convert]::ToBase64String\\($b\\))"
+      "PowerShell($b = New-Object byte[] 48; [System.Security.Cryptography.RandomNumberGenerator]::Create\\(\\).GetBytes\\($b\\); [Convert]::ToBase64String\\($b\\))",
+      "PowerShell(winget install *)",
+      "PowerShell($paths = @\\(\"$env:ProgramFiles\\(x86\\)\\\\cloudflared\", \"$env:ProgramFiles\\\\cloudflared\", \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Packages\", \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Links\"\\); foreach \\($p in $paths\\) { if \\(Test-Path $p\\) { Get-ChildItem $p -Recurse -Filter cloudflared.exe -ErrorAction SilentlyContinue | Select-Object -First 3 -Expand FullName } })",
+      "PowerShell(& \"C:\\\\Program Files \\(x86\\)\\\\cloudflared\\\\cloudflared.exe\" tunnel create rei-do-pitaco)",
+      "PowerShell(& \"C:\\\\Program Files \\(x86\\)\\\\cloudflared\\\\cloudflared.exe\" tunnel list)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Stop-Service *)",
+      "PowerShell(sudo powershell *)",
+      "PowerShell($cf = \"C:\\\\Program Files \\(x86\\)\\\\cloudflared\\\\cloudflared.exe\"; & $cf tunnel cleanup rei-do-pitaco; & $cf tunnel delete rei-do-pitaco; & $cf tunnel create rei-do-pitaco; & $cf tunnel list)",
+      "PowerShell(& \"C:\\\\Program Files \\(x86\\)\\\\cloudflared\\\\cloudflared.exe\" tunnel route dns rei-do-pitaco api.pitaco.dpdns.org)",
+      "PowerShell(docker compose *)",
+      "PowerShell(Start-Sleep -Seconds 5; try { $r = Invoke-WebRequest -Uri \"https://api.pitaco.dpdns.org/actuator/health\" -UseBasicParsing -TimeoutSec 30; \"HTTP $\\($r.StatusCode\\): $\\($r.Content\\)\" } catch { \"Falhou: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(git *)",
+      "PowerShell(Start-Sleep -Seconds 8; try { $r = Invoke-WebRequest -Uri \"https://api.pitaco.dpdns.org/actuator/health\" -UseBasicParsing -TimeoutSec 30; \"HTTP $\\($r.StatusCode\\)\" } catch { \"Falhou: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(docker stats *)",
+      "PowerShell(1..5 | ForEach-Object { $t = Measure-Command { Invoke-WebRequest -Uri \"https://api.pitaco.dpdns.org/actuator/health\" -UseBasicParsing -TimeoutSec 60 | Out-Null }; \"req $_ via tunel: $\\([math]::Round\\($t.TotalMilliseconds\\)\\) ms\" })",
+      "PowerShell(Start-Sleep -Seconds 370; 1..3 | ForEach-Object { $t = Measure-Command { Invoke-WebRequest -Uri \"https://api.pitaco.dpdns.org/actuator/health\" -UseBasicParsing -TimeoutSec 90 | Out-Null }; \"req $_ apos 6min idle: $\\([math]::Round\\($t.TotalMilliseconds\\)\\) ms\" })",
+      "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\diego\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -DskipTests compile)",
+      "PowerShell(docker logs reidopitaco-api *)",
+      "PowerShell(\"== RENDER \\(antigo\\) ==\"; 1..2 | ForEach-Object { $t = Measure-Command { try { Invoke-WebRequest -Uri \"https://rei-do-pitaco-api.onrender.com/actuator/health\" -UseBasicParsing -TimeoutSec 120 | Out-Null } catch {} }; \"health req $_ : $\\([math]::Round\\($t.TotalMilliseconds\\)\\) ms\" }; \"== SELF-HOST \\(novo\\) ==\"; 1..2 | ForEach-Object { $t = Measure-Command { Invoke-WebRequest -Uri \"https://api.pitaco.dpdns.org/actuator/health\" -UseBasicParsing -TimeoutSec 60 | Out-Null }; \"health req $_ : $\\([math]::Round\\($t.TotalMilliseconds\\)\\) ms\" })",
+      "PowerShell($r = Invoke-RestMethod -Uri \"https://api.pitaco.dpdns.org/api/auth/signin\" -Method Post -ContentType \"application/json\" -Body \\(@{ email = \"diag-claude@teste.com\"; password = \"diagnostico123\" } | ConvertTo-Json\\); $h = @{ Authorization = \"Bearer $\\($r.accessToken\\)\" }; foreach \\($ep in @\\(\"/api/tournaments/08bcc3dc-efaa-46f3-b9e0-0af20213d3ab/phases/31b96716-ca18-4abb-b3f8-04549191b4db/standings\", \"/api/tournaments/08bcc3dc-efaa-46f3-b9e0-0af20213d3ab/matches\"\\)\\) { $t = Measure-Command { try { Invoke-RestMethod -Uri \"https://api.pitaco.dpdns.org$ep\" -Headers $h | Out-Null; $ok = \"OK\" } catch { $ok = $_.Exception.Response.StatusCode } }; \"$ok $ep : $\\([math]::Round\\($t.TotalMilliseconds\\)\\) ms\" })",
+      "PowerShell($env:JAVA_HOME = \"C:\\\\Users\\\\diego\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q spring-boot:run)",
+      "PowerShell(Start-Sleep -Seconds 6; \\(Invoke-WebRequest -Uri \"https://api.pitaco.dpdns.org/actuator/health\" -UseBasicParsing -TimeoutSec 30\\).StatusCode)"
     ]
   }
 }

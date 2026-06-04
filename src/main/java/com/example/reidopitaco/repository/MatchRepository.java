@@ -20,6 +20,14 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     @Query("""
             SELECT m FROM Match m
+            JOIN FETCH m.phase p
+            JOIN FETCH p.tournament
+            WHERE m.publicId = :publicId
+            """)
+    Optional<Match> findByPublicIdWithLocation(@Param("publicId") UUID publicId);
+
+    @Query("""
+            SELECT m FROM Match m
             JOIN FETCH m.homeTeam
             JOIN FETCH m.awayTeam
             LEFT JOIN FETCH m.group

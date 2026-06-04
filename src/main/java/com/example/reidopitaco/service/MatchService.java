@@ -3,6 +3,7 @@ package com.example.reidopitaco.service;
 import com.example.reidopitaco.dto.request.CreateMatchRequest;
 import com.example.reidopitaco.dto.request.SetMatchResultRequest;
 import com.example.reidopitaco.dto.request.UpdateMatchRequest;
+import com.example.reidopitaco.dto.response.MatchLocationResponse;
 import com.example.reidopitaco.dto.response.MatchResponse;
 import com.example.reidopitaco.entity.Match;
 import com.example.reidopitaco.entity.PhaseGroup;
@@ -147,6 +148,23 @@ public class MatchService {
         Match match = matchRepository.findByPublicIdAndPhasePublicId(matchPublicId, phasePublicId)
                 .orElseThrow(MatchNotFoundException::new);
         return mapper.toResponse(match);
+    }
+
+    /**
+     * Resolve um id de partida para sua localização (torneio + fase), usado
+     * pelos links curtos /m/{matchId}. Só exige autenticação — a checagem de
+     * acesso/participação acontece depois, ao abrir o detalhe da partida.
+     */
+    @Transactional(readOnly = true)
+    public MatchLocationResponse locate(UUID matchPublicId) {
+        Match match = matchRepository.findByPublicIdWithLocation(matchPublicId)
+                .orElseThrow(MatchNotFoundException::new);
+        TournamentPhase phase = match.getPhase();
+        return new MatchLocationResponse(
+                phase.getTournament().getPublicId(),
+                phase.getPublicId(),
+                match.getPublicId()
+        );
     }
 
     @Transactional
