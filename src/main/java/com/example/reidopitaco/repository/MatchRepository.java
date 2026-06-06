@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +26,53 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             WHERE m.publicId = :publicId
             """)
     Optional<Match> findByPublicIdWithLocation(@Param("publicId") UUID publicId);
+
+    /**
+     * Partidas agendadas cujo início cai na janela (lower, upper] e que ainda não
+     * receberam o aviso da faixa indicada. Traz times/fase/torneio para montar a
+     * mensagem e identificar a audiência sem N+1.
+     */
+    @Query("""
+            SELECT m FROM Match m
+            JOIN FETCH m.homeTeam
+            JOIN FETCH m.awayTeam
+            JOIN FETCH m.phase p
+            JOIN FETCH p.tournament
+            WHERE m.status = com.example.reidopitaco.enums.MatchStatus.SCHEDULED
+              AND m.scheduledAt IS NOT NULL
+              AND m.scheduledAt > :lower
+              AND m.scheduledAt <= :upper
+              AND m.notified24h = false
+            """)
+    List<Match> findDueForReminder24h(@Param("lower") Instant lower, @Param("upper") Instant upper);
+
+    @Query("""
+            SELECT m FROM Match m
+            JOIN FETCH m.homeTeam
+            JOIN FETCH m.awayTeam
+            JOIN FETCH m.phase p
+            JOIN FETCH p.tournament
+            WHERE m.status = com.example.reidopitaco.enums.MatchStatus.SCHEDULED
+              AND m.scheduledAt IS NOT NULL
+              AND m.scheduledAt > :lower
+              AND m.scheduledAt <= :upper
+              AND m.notified4h = false
+            """)
+    List<Match> findDueForReminder4h(@Param("lower") Instant lower, @Param("upper") Instant upper);
+
+    @Query("""
+            SELECT m FROM Match m
+            JOIN FETCH m.homeTeam
+            JOIN FETCH m.awayTeam
+            JOIN FETCH m.phase p
+            JOIN FETCH p.tournament
+            WHERE m.status = com.example.reidopitaco.enums.MatchStatus.SCHEDULED
+              AND m.scheduledAt IS NOT NULL
+              AND m.scheduledAt > :lower
+              AND m.scheduledAt <= :upper
+              AND m.notified1h = false
+            """)
+    List<Match> findDueForReminder1h(@Param("lower") Instant lower, @Param("upper") Instant upper);
 
     @Query("""
             SELECT m FROM Match m

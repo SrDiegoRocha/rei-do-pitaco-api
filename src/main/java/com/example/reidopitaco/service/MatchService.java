@@ -45,6 +45,7 @@ public class MatchService {
     private final MatchMapper mapper;
     private final PredictionService predictionService;
     private final TournamentAccessGuard accessGuard;
+    private final MatchNotificationService matchNotificationService;
 
     public MatchService(
             TournamentRepository tournamentRepository,
@@ -54,7 +55,8 @@ public class MatchService {
             MatchRepository matchRepository,
             MatchMapper mapper,
             PredictionService predictionService,
-            TournamentAccessGuard accessGuard
+            TournamentAccessGuard accessGuard,
+            MatchNotificationService matchNotificationService
     ) {
         this.tournamentRepository = tournamentRepository;
         this.phaseRepository = phaseRepository;
@@ -64,6 +66,7 @@ public class MatchService {
         this.mapper = mapper;
         this.predictionService = predictionService;
         this.accessGuard = accessGuard;
+        this.matchNotificationService = matchNotificationService;
     }
 
     @Transactional
@@ -195,12 +198,22 @@ public class MatchService {
         ensureTeamFreeInRound(phase, request.round(), home.getTeam().getId(), match.getId());
         ensureTeamFreeInRound(phase, request.round(), away.getTeam().getId(), match.getId());
 
+        var previousScheduledAt = match.getScheduledAt();
+
         match.setRound(request.round());
         match.setGroup(group);
         match.setHomeTeam(home.getTeam());
         match.setAwayTeam(away.getTeam());
         match.setScheduledAt(request.scheduledAt());
         match.setMatchType(resolveMatchType(phase, request.matchType()));
+
+        // Remarcar a partida reabre os lembretes: zera as flags de 24h/4h/1h para
+        // que disparem de novo conforme o novo horário. A flag de resultado fica.
+        if (!java.util.Objects.equals(previousScheduledAt, request.scheduledAt())) {
+            match.setNotified24h(false);
+            match.setNotified4h(false);
+            match.setNotified1h(false);
+        }
 
         return mapper.toResponse(matchRepository.saveAndFlush(match));
     }
@@ -239,6 +252,7 @@ public class MatchService {
         match.setStatus(MatchStatus.COMPLETED);
         Match saved = matchRepository.saveAndFlush(match);
         predictionService.recalculatePointsFor(saved);
+        matchNotificationService.notifyResultAvailable(saved);
         return mapper.toResponse(saved);
     }
 

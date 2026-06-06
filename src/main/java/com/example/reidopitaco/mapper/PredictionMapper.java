@@ -19,6 +19,7 @@ public class PredictionMapper {
                 prediction.getUser().getName(),
                 revealScores ? prediction.getHomeScore() : null,
                 revealScores ? prediction.getAwayScore() : null,
+                revealScores ? prediction.getPenaltyWinner() : null,
                 revealScores ? prediction.getPoints() : null,
                 prediction.getCreatedAt(),
                 prediction.getUpdatedAt()

@@ -5,7 +5,14 @@ import com.example.reidopitaco.entity.Match;
 import com.example.reidopitaco.entity.Prediction;
 import com.example.reidopitaco.entity.User;
 import com.example.reidopitaco.enums.MatchStatus;
+import com.example.reidopitaco.enums.MatchType;
+import com.example.reidopitaco.exception.BusinessException;
+import com.example.reidopitaco.exception.PhaseGroupNotFoundException;
+import com.example.reidopitaco.exception.PhaseNotFoundException;
+import com.example.reidopitaco.repository.PhaseGroupRepository;
 import com.example.reidopitaco.repository.PredictionRepository;
+import com.example.reidopitaco.repository.TournamentPhaseRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,24 +27,61 @@ import java.util.UUID;
 public class RankingService {
 
     private final PredictionRepository predictionRepository;
+    private final TournamentPhaseRepository phaseRepository;
+    private final PhaseGroupRepository groupRepository;
     private final TournamentAccessGuard accessGuard;
     private final AvatarService avatarService;
 
     public RankingService(
             PredictionRepository predictionRepository,
+            TournamentPhaseRepository phaseRepository,
+            PhaseGroupRepository groupRepository,
             TournamentAccessGuard accessGuard,
             AvatarService avatarService
     ) {
         this.predictionRepository = predictionRepository;
+        this.phaseRepository = phaseRepository;
+        this.groupRepository = groupRepository;
         this.accessGuard = accessGuard;
         this.avatarService = avatarService;
     }
 
+    /**
+     * Ranking do torneio, com filtros opcionais por fase, grupo, rodada e tipo de
+     * partida. Sem filtro, agrega todas as predictions. Com filtro, considera só os
+     * palpites das partidas que casam — útil para "ranking só da fase de grupos", "só
+     * do Grupo A", "só da rodada 3", "só da Final" vs "só da Disputa de 3º" (mesmo
+     * round, matchType diferente). {@code totalPredictions}/pontos refletem o recorte.
+     */
     @Transactional(readOnly = true)
-    public List<RankingRowResponse> compute(UUID requesterPublicId, UUID tournamentPublicId) {
+    public List<RankingRowResponse> compute(
+            UUID requesterPublicId,
+            UUID tournamentPublicId,
+            UUID phaseId,
+            UUID groupId,
+            Integer round,
+            MatchType matchType
+    ) {
         accessGuard.requireViewable(requesterPublicId, tournamentPublicId);
 
-        List<Prediction> predictions = predictionRepository.findAllByTournamentPublicId(tournamentPublicId);
+        // Valida os filtros: 404 se o id não pertence ao torneio/fase; 400 se grupo sem fase.
+        if (phaseId != null) {
+            phaseRepository.findByPublicIdAndTournamentPublicId(phaseId, tournamentPublicId)
+                    .orElseThrow(PhaseNotFoundException::new);
+        }
+        if (groupId != null) {
+            if (phaseId == null) {
+                throw new BusinessException(
+                        "groupId requires phaseId (a group belongs to a phase)",
+                        HttpStatus.BAD_REQUEST
+                );
+            }
+            groupRepository.findByPublicIdAndPhasePublicId(groupId, phaseId)
+                    .orElseThrow(PhaseGroupNotFoundException::new);
+        }
+
+        List<Prediction> predictions = predictionRepository.findForRanking(
+                tournamentPublicId, phaseId, groupId, round, matchType);
 
         Map<Long, Accumulator> table = new HashMap<>();
         for (Prediction p : predictions) {

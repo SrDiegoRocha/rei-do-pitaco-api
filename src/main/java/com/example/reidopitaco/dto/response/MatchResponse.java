@@ -22,6 +22,10 @@ public record MatchResponse(
         Integer awayScore,
         Integer homePenalties,
         Integer awayPenalties,
+        // Apoio ao palpite de pênaltis (ver # Sistema de palpites):
+        boolean penaltyShootoutEligible,  // empate aqui pode ir aos pênaltis (jogo único KO ou perna de volta)
+        int aggregateBeforeHome,          // gols do mandante DESTA partida nas pernas anteriores (orientado a esta partida)
+        int aggregateBeforeAway,          // idem para o visitante DESTA partida; 0 em jogo único / ida não concluída
         MatchStatus status,
         Instant createdAt,
         Instant updatedAt

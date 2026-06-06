@@ -1,5 +1,7 @@
 package com.example.reidopitaco.dto.response;
 
+import com.example.reidopitaco.enums.MatchSide;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -10,6 +12,7 @@ public record PredictionResponse(
         String userName,
         Integer homeScore,
         Integer awayScore,
+        MatchSide penaltyWinner,
         Integer points,
         Instant createdAt,
         Instant updatedAt

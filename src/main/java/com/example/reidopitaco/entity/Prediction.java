@@ -1,7 +1,10 @@
 package com.example.reidopitaco.entity;
 
+import com.example.reidopitaco.enums.MatchSide;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -57,6 +60,15 @@ public class Prediction {
 
     @Column(name = "away_score", nullable = false)
     private int awayScore;
+
+    /**
+     * Quem o palpiteiro acha que passa nos pênaltis (lado do confronto). Só preenchido em
+     * palpite de empate em jogo único de mata-mata, ou na perna de volta de ida-e-volta.
+     * {@code null} quando o palpite não envolve pênaltis.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "penalty_winner", length = 8)
+    private MatchSide penaltyWinner;
 
     @Column(nullable = false)
     private int points;

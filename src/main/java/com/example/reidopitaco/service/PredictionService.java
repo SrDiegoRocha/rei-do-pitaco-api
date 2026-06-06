@@ -5,13 +5,19 @@ import com.example.reidopitaco.dto.response.PredictionResponse;
 import com.example.reidopitaco.dto.response.PredictionStatsResponse;
 import com.example.reidopitaco.entity.Match;
 import com.example.reidopitaco.entity.Prediction;
+import com.example.reidopitaco.entity.Team;
 import com.example.reidopitaco.entity.Tournament;
 import com.example.reidopitaco.entity.TournamentMember;
+import com.example.reidopitaco.entity.TournamentPhase;
 import com.example.reidopitaco.entity.TournamentSettings;
 import com.example.reidopitaco.entity.User;
+import com.example.reidopitaco.enums.MatchLegMode;
+import com.example.reidopitaco.enums.MatchSide;
 import com.example.reidopitaco.enums.MatchStatus;
 import com.example.reidopitaco.enums.TournamentMemberStatus;
+import com.example.reidopitaco.enums.TournamentPhaseType;
 import com.example.reidopitaco.enums.TournamentStatus;
+import com.example.reidopitaco.exception.BusinessException;
 import com.example.reidopitaco.exception.MatchNotFoundException;
 import com.example.reidopitaco.exception.NotTournamentMemberException;
 import com.example.reidopitaco.exception.PredictionLockedException;
@@ -23,6 +29,7 @@ import com.example.reidopitaco.repository.PredictionRepository;
 import com.example.reidopitaco.repository.TournamentMemberRepository;
 import com.example.reidopitaco.repository.TournamentRepository;
 import com.example.reidopitaco.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +46,8 @@ public class PredictionService {
     private final PredictionRepository predictionRepository;
     private final UserRepository userRepository;
     private final PredictionMapper mapper;
+    private final TieAggregateCalculator tieCalculator;
+    private final MatchPenaltyHelper penaltyHelper;
 
     public PredictionService(
             TournamentRepository tournamentRepository,
@@ -46,7 +55,9 @@ public class PredictionService {
             MatchRepository matchRepository,
             PredictionRepository predictionRepository,
             UserRepository userRepository,
-            PredictionMapper mapper
+            PredictionMapper mapper,
+            TieAggregateCalculator tieCalculator,
+            MatchPenaltyHelper penaltyHelper
     ) {
         this.tournamentRepository = tournamentRepository;
         this.memberRepository = memberRepository;
@@ -54,6 +65,8 @@ public class PredictionService {
         this.predictionRepository = predictionRepository;
         this.userRepository = userRepository;
         this.mapper = mapper;
+        this.tieCalculator = tieCalculator;
+        this.penaltyHelper = penaltyHelper;
     }
 
     @Transactional
@@ -69,6 +82,7 @@ public class PredictionService {
 
         Match match = loadMatchInTournament(tournament, matchPublicId);
         ensurePredictionsOpen(match);
+        validatePenaltyWinner(match, request);
 
         User user = userRepository.findByPublicId(userPublicId)
                 .orElseThrow(TournamentNotFoundException::new);
@@ -84,11 +98,13 @@ public class PredictionService {
                     .user(user)
                     .homeScore(request.homeScore())
                     .awayScore(request.awayScore())
+                    .penaltyWinner(request.penaltyWinner())
                     .points(0)
                     .build();
         } else {
             prediction.setHomeScore(request.homeScore());
             prediction.setAwayScore(request.awayScore());
+            prediction.setPenaltyWinner(request.penaltyWinner());
         }
 
         return mapper.toResponse(predictionRepository.saveAndFlush(prediction));
@@ -299,8 +315,28 @@ public class PredictionService {
         int actualAway = match.getAwayScore();
         int guessedHome = prediction.getHomeScore();
         int guessedAway = prediction.getAwayScore();
+        boolean exactScore = guessedHome == actualHome && guessedAway == actualAway;
 
-        if (guessedHome == actualHome && guessedAway == actualAway) {
+        // Confronto decidido nos pênaltis E o palpiteiro indicou quem passa: combina o acerto
+        // do placar exato com o acerto de quem se classificou. Ver tabela no # Sistema de palpites.
+        Team progressor = actualPenaltyProgressor(match);
+        if (progressor != null && prediction.getPenaltyWinner() != null) {
+            Team guessedTeam = prediction.getPenaltyWinner() == MatchSide.HOME
+                    ? match.getHomeTeam()
+                    : match.getAwayTeam();
+            boolean advancerCorrect = guessedTeam.getId().equals(progressor.getId());
+            int hits = (exactScore ? 1 : 0) + (advancerCorrect ? 1 : 0);
+            if (hits == 2) {
+                return settings.getExactScorePoints();
+            }
+            if (hits == 1) {
+                return settings.getWinnerPoints();
+            }
+            return settings.getWrongPoints();
+        }
+
+        // Pontuação normal (sem pênaltis em jogo): placar exato → vencedor → erro.
+        if (exactScore) {
             return settings.getExactScorePoints();
         }
         int actualOutcome = Integer.compare(actualHome, actualAway);
@@ -309,6 +345,71 @@ public class PredictionService {
             return settings.getWinnerPoints();
         }
         return settings.getWrongPoints();
+    }
+
+    /**
+     * Time que efetivamente se classificou nos pênaltis neste confronto, ou {@code null} se a
+     * partida/confronto não foi decidida nos pênaltis (resultado no tempo normal / agregado, ou
+     * pênaltis ainda não lançados). Em jogo único usa o placar + pênaltis da própria partida; em
+     * ida-e-volta usa o agregado do confronto ({@link TieAggregateCalculator}).
+     */
+    private Team actualPenaltyProgressor(Match match) {
+        TournamentPhase phase = match.getPhase();
+        if (phase.getPhaseType() != TournamentPhaseType.KNOCKOUT) {
+            return null;
+        }
+        if (phase.getMatchLegMode() == MatchLegMode.SINGLE) {
+            if (match.getHomePenalties() == null || match.getAwayPenalties() == null) {
+                return null;
+            }
+            if (match.getHomeScore().intValue() != match.getAwayScore().intValue()) {
+                return null; // decidido no tempo normal — pênaltis não valem
+            }
+            return match.getHomePenalties() > match.getAwayPenalties()
+                    ? match.getHomeTeam()
+                    : match.getAwayTeam();
+        }
+        // TWO_LEGGED: só o agregado decide; winner != null apenas em empate resolvido nos pênaltis.
+        var aggregate = tieCalculator.compute(matchRepository.findAllByTieId(match.getTieId()));
+        if (aggregate.homeAggregate() != aggregate.awayAggregate()) {
+            return null; // confronto decidido no agregado, sem pênaltis
+        }
+        return aggregate.winner();
+    }
+
+    /**
+     * Valida o {@code penaltyWinner}: só é aceito em confronto que pode ir aos pênaltis (jogo único
+     * de mata-mata ou perna de volta) e quando o palpite leva o confronto a empate. O gatilho do
+     * empate é o <b>agregado</b> (gols reais das pernas anteriores + placar palpitado desta), não o
+     * placar isolado — em jogo único o agregado anterior é 0x0, então equivale ao placar da partida.
+     * Nesses casos elegíveis com empate, é obrigatório.
+     */
+    private void validatePenaltyWinner(Match match, PlacePredictionRequest request) {
+        List<Match> legs = matchRepository.findAllByTieId(match.getTieId());
+        boolean eligible = penaltyHelper.isEligible(match, legs);
+        int[] aggBefore = penaltyHelper.aggregateBefore(match, legs);
+        boolean predictedDraw =
+                (aggBefore[0] + request.homeScore()) == (aggBefore[1] + request.awayScore());
+        if (request.penaltyWinner() != null) {
+            if (!eligible) {
+                throw new BusinessException(
+                        "penaltyWinner only applies to a single-leg knockout match or the second "
+                                + "leg of a two-legged tie",
+                        HttpStatus.BAD_REQUEST
+                );
+            }
+            if (!predictedDraw) {
+                throw new BusinessException(
+                        "penaltyWinner only applies when your prediction ends the tie in a draw",
+                        HttpStatus.BAD_REQUEST
+                );
+            }
+        } else if (eligible && predictedDraw) {
+            throw new BusinessException(
+                    "penaltyWinner is required when your prediction ends the tie in a draw",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
     }
 
     private Tournament loadTournament(UUID tournamentPublicId) {

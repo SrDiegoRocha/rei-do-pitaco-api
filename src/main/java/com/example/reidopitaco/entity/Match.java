@@ -85,6 +85,18 @@ public class Match {
     @Column(name = "match_type", nullable = false, length = 15)
     private MatchType matchType;
 
+    @Column(name = "notified_24h", nullable = false)
+    private boolean notified24h;
+
+    @Column(name = "notified_4h", nullable = false)
+    private boolean notified4h;
+
+    @Column(name = "notified_1h", nullable = false)
+    private boolean notified1h;
+
+    @Column(name = "notified_result", nullable = false)
+    private boolean notifiedResult;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

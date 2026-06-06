@@ -4,13 +4,21 @@ import com.example.reidopitaco.dto.response.MatchResponse;
 import com.example.reidopitaco.entity.Match;
 import com.example.reidopitaco.entity.PhaseGroup;
 import com.example.reidopitaco.entity.Team;
+import com.example.reidopitaco.service.MatchPenaltyHelper;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MatchMapper {
 
+    private final MatchPenaltyHelper penaltyHelper;
+
+    public MatchMapper(MatchPenaltyHelper penaltyHelper) {
+        this.penaltyHelper = penaltyHelper;
+    }
+
     public MatchResponse toResponse(Match match) {
         PhaseGroup group = match.getGroup();
+        MatchPenaltyHelper.PenaltyInfo penalty = penaltyHelper.resolve(match);
         return new MatchResponse(
                 match.getPublicId(),
                 match.getPhase().getPublicId(),
@@ -26,6 +34,9 @@ public class MatchMapper {
                 match.getAwayScore(),
                 match.getHomePenalties(),
                 match.getAwayPenalties(),
+                penalty.eligible(),
+                penalty.aggregateBeforeHome(),
+                penalty.aggregateBeforeAway(),
                 match.getStatus(),
                 match.getCreatedAt(),
                 match.getUpdatedAt()
