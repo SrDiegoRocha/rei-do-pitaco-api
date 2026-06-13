@@ -3,6 +3,7 @@ package com.example.reidopitaco.controller;
 import com.example.reidopitaco.dto.request.PlacePredictionRequest;
 import com.example.reidopitaco.dto.response.PredictionResponse;
 import com.example.reidopitaco.dto.response.PredictionStatsResponse;
+import com.example.reidopitaco.dto.response.RecalculationResponse;
 import com.example.reidopitaco.service.PredictionService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,6 +72,16 @@ public class PredictionController {
     ) {
         return ResponseEntity.ok(
                 predictionService.stats(UUID.fromString(requesterPublicId), tournamentId, matchId)
+        );
+    }
+
+    @PostMapping("/predictions/recalculate")
+    public ResponseEntity<RecalculationResponse> recalculate(
+            @AuthenticationPrincipal String ownerPublicId,
+            @PathVariable UUID tournamentId
+    ) {
+        return ResponseEntity.ok(
+                predictionService.recalculateAllPoints(UUID.fromString(ownerPublicId), tournamentId)
         );
     }
 

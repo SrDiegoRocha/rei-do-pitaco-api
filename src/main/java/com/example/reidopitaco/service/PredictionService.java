@@ -3,6 +3,7 @@ package com.example.reidopitaco.service;
 import com.example.reidopitaco.dto.request.PlacePredictionRequest;
 import com.example.reidopitaco.dto.response.PredictionResponse;
 import com.example.reidopitaco.dto.response.PredictionStatsResponse;
+import com.example.reidopitaco.dto.response.RecalculationResponse;
 import com.example.reidopitaco.entity.Match;
 import com.example.reidopitaco.entity.Prediction;
 import com.example.reidopitaco.entity.Team;
@@ -20,6 +21,7 @@ import com.example.reidopitaco.enums.TournamentStatus;
 import com.example.reidopitaco.exception.BusinessException;
 import com.example.reidopitaco.exception.MatchNotFoundException;
 import com.example.reidopitaco.exception.NotTournamentMemberException;
+import com.example.reidopitaco.exception.NotTournamentOwnerException;
 import com.example.reidopitaco.exception.PredictionLockedException;
 import com.example.reidopitaco.exception.PredictionNotFoundException;
 import com.example.reidopitaco.exception.TournamentNotFoundException;
@@ -293,6 +295,45 @@ public class PredictionService {
         predictionRepository.saveAll(predictions);
     }
 
+    /**
+     * Reaplica as regras de pontuação vigentes do torneio a <b>todos</b> os palpites já existentes,
+     * partida por partida. Pensado para quando o owner altera a pontuação
+     * ({@code exactScorePoints}/{@code winnerPoints}/{@code wrongPoints}) com o torneio já em
+     * andamento: por padrão a mudança só vale para resultados lançados dali em diante, então este
+     * endpoint serve para o owner decidir, explicitamente, recalcular o histórico também.
+     *
+     * <p>Owner-only. Percorre todas as partidas do torneio e recomputa {@code prediction.points}
+     * com {@link #scoreFor}, usando os {@code TournamentSettings} atuais. Partidas não-{@code COMPLETED}
+     * (incluindo {@code CANCELLED}) zeram, como já fazem o {@code setResult}/{@code cancel}. Idempotente:
+     * rodar de novo sem mudar nada não altera nenhum ponto. O ranking, calculado on-demand a partir de
+     * {@code prediction.points}, reflete o novo cenário na próxima leitura.
+     */
+    @Transactional
+    public RecalculationResponse recalculateAllPoints(UUID ownerPublicId, UUID tournamentPublicId) {
+        Tournament tournament = loadOwnedTournament(ownerPublicId, tournamentPublicId);
+        TournamentSettings settings = tournament.getSettings();
+
+        List<Match> matches = matchRepository.findAllByTournamentPublicIdOrdered(tournamentPublicId);
+        int matchesProcessed = 0;
+        int predictionsUpdated = 0;
+        for (Match match : matches) {
+            List<Prediction> predictions = predictionRepository.findAllByMatchId(match.getId());
+            if (predictions.isEmpty()) {
+                continue;
+            }
+            matchesProcessed++;
+            for (Prediction p : predictions) {
+                int newPoints = scoreFor(p, match, settings);
+                if (p.getPoints() != newPoints) {
+                    p.setPoints(newPoints);
+                    predictionsUpdated++;
+                }
+            }
+            predictionRepository.saveAll(predictions);
+        }
+        return new RecalculationResponse(matches.size(), matchesProcessed, predictionsUpdated);
+    }
+
     @Transactional
     public void zeroPointsFor(Match match) {
         List<Prediction> predictions = predictionRepository.findAllByMatchId(match.getId());
@@ -415,6 +456,14 @@ public class PredictionService {
     private Tournament loadTournament(UUID tournamentPublicId) {
         return tournamentRepository.findByPublicIdAndActiveTrue(tournamentPublicId)
                 .orElseThrow(TournamentNotFoundException::new);
+    }
+
+    private Tournament loadOwnedTournament(UUID ownerPublicId, UUID tournamentPublicId) {
+        Tournament tournament = loadTournament(tournamentPublicId);
+        if (!tournament.getOwner().getPublicId().equals(ownerPublicId)) {
+            throw new NotTournamentOwnerException();
+        }
+        return tournament;
     }
 
     private void ensureTournamentInProgress(Tournament tournament) {

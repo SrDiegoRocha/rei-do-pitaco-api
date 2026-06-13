@@ -1189,6 +1189,29 @@ Palpites de **um participante específico** no torneio inteiro (todas as partida
 - `userId` inexistente / sem palpites → `[]` (lista vazia).
 - Ordenação não garantida — o front junta com os dados das partidas.
 
+### `POST /api/tournaments/{tid}/predictions/recalculate` → 200 `RecalculationResponse`
+
+Reaplica as **regras de pontuação vigentes** do torneio a **todos os palpites já existentes**, partida por partida. Sem body.
+
+**Motivação.** Quando o owner altera a pontuação (`exactScorePoints` / `winnerPoints` / `wrongPoints`) com o torneio **em andamento**, a mudança só vale automaticamente para resultados lançados dali em diante (cada `setResult` recalcula apenas os palpites daquela partida). As partidas já lançadas continuam com os pontos calculados pela regra antiga. Este endpoint é a ação **explícita** para o owner recalcular o histórico inteiro com a nova pontuação. Se ele **não** chamar, a regra antiga permanece nos jogos já lançados e a nova vale só dos próximos em diante.
+
+Comportamento:
+- **Owner-only** — senão **403** `Only the tournament owner can perform this action`.
+- Percorre todas as partidas do torneio. Para cada palpite, recomputa `points` com os `TournamentSettings` atuais (mesma lógica de `setResult`). Partidas não-`COMPLETED` (incluindo `CANCELLED`) zeram os pontos, como já acontece em `setResult`/`cancel`.
+- **Idempotente**: rodar de novo sem ter mudado a pontuação/resultados não altera nenhum ponto (`predictionsUpdated: 0`).
+- O **ranking** é calculado on-demand a partir de `prediction.points`, então reflete o novo cenário já na próxima leitura de `GET .../ranking` — não há passo extra.
+- Disponível em qualquer status do torneio (em `FINISHED` é efetivamente um no-op, já que pontuação e resultados estão congelados). Torneio inexistente / soft-deletado → **404** `Tournament not found`.
+
+```ts
+export interface RecalculationResponse {
+  totalMatches: number;        // total de partidas no torneio
+  matchesProcessed: number;    // partidas que tinham ao menos um palpite e foram reavaliadas
+  predictionsUpdated: number;  // palpites cujo `points` efetivamente mudou
+}
+```
+
+Fluxo típico no front: owner abre as configurações de pontuação → salva a nova pontuação (`PUT /api/tournaments/{id}`) → aparece um aviso "a nova pontuação só vale para os próximos jogos; deseja recalcular os jogos já lançados?" → se confirmar, chama este endpoint.
+
 ---
 
 ## 18. Ranking
