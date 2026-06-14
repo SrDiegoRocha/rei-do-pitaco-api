@@ -942,6 +942,115 @@ Erros:
 
 ---
 
+## 14.1 Feed pessoal de partidas (`/api/users/me/matches`)
+
+Tela inicial do app: lista **todas as partidas de todos os torneios em que o usuário participa**, em ordem cronológica, para um único scroll vertical centrado no "hoje" (rolar pra cima → partidas passadas; pra baixo → partidas futuras).
+
+### `GET /api/users/me/matches` → 200 `UserMatchResponse[]`
+
+Sem body. Retorna a lista já ordenada pelo banco. **Sem query params, devolve a lista completa** (comportamento original, retrocompatível). Os params abaixo são **opcionais** e servem para paginar por janela de data.
+
+**Query params (todos opcionais):**
+
+| Param | Tipo | Descrição |
+| --- | --- | --- |
+| `from` | ISO instant | Recorta por `scheduledAt >= from`. Ex.: `2026-06-11T00:00:00Z`. |
+| `to` | ISO instant | Recorta por `scheduledAt < to` (limite **exclusivo**). |
+| `limit` | int | Teto de itens retornados. Omisso (ou `<= 0`) → **sem teto** (lista inteira). |
+
+A janela é semiaberta `[from, to)`, então páginas adjacentes (`to` de uma = `from` da próxima) não duplicam nem pulam partidas. Cada bound é independente — dá pra mandar só `from`, só `to`, ou os dois. Valor malformado em qualquer param → **400** `Invalid value for parameter '<nome>'`.
+
+**Sugestão de uso pelo front (paginação de rede):**
+- 1ª carga centrada no hoje: `from = now - 2d`, `to = now + 7d`.
+- scroll pra baixo: próximo `from = to anterior` (e novo `to` mais à frente).
+- scroll pra cima: `to = from anterior`, `from = to - Nd`.
+
+**Escopo (quais partidas entram):**
+- De torneios **ativos** (não soft-deletados) onde o usuário é **membro `ACTIVE`**. Isso inclui os torneios em que ele é **dono** (o dono é membro auto-ativo). Quem saiu (`LEFT`) ou foi banido (`BANNED`) não vê as partidas daquele torneio.
+- **Apenas partidas com `scheduledAt` definido.** Partidas sem horário marcado **não aparecem** (não têm lugar numa timeline por data) — diferente do `GET /api/tournaments/{id}/matches`, que traz todas.
+- Cobre todas as fases de todos esses torneios, misturadas e ordenadas por data.
+
+**Ordenação (aplicada no banco):**
+1. `scheduledAt` ASC — cronológico puro, atravessando torneios e fases.
+2. `createdAt` ASC — desempate estável quando dois jogos têm o mesmo horário.
+
+> Como tudo vem ordenado por `scheduledAt`, o front acha o "hoje" buscando o primeiro item com `match.scheduledAt >= now` e ancora o scroll ali.
+
+**Acesso:** basta estar autenticado. Não há `TournamentAccessGuard` aqui — o próprio escopo (membro ACTIVE) já é o controle de acesso. Token ausente/inválido → **401/403** padrão.
+
+**Tipagem:**
+
+```ts
+export interface UserMatchResponse {
+  match: MatchResponse;          // mesmo payload da §14 (times, placar, status, pênaltis, round, tieId...)
+  tournament: TournamentRef;
+  phase: PhaseRef;
+  group: GroupRef | null;        // null fora de fase GROUPS
+  myPrediction: MyPrediction | null; // null se o usuário ainda não palpitou nesta partida
+}
+
+export interface TournamentRef {
+  id: string;                    // UUID
+  name: string;
+  privacy: 'PUBLIC' | 'PRIVATE';
+  status: 'DRAFT' | 'OPEN' | 'IN_PROGRESS' | 'FINISHED';
+  scoring: ScoringRef;           // pontuação de palpite do torneio (chip de pontos por faixa)
+}
+
+export interface ScoringRef {
+  exactScorePoints: number;      // acertou o placar exato
+  winnerPoints: number;          // acertou só o vencedor/empate
+  wrongPoints: number;           // errou o desfecho
+}
+
+export interface PhaseRef {
+  id: string;                    // UUID
+  name: string;                  // ex. "Fase de Grupos", "Oitavas"
+  position: number;              // ordem da fase no torneio (0-based)
+  phaseType: 'ROUND_ROBIN' | 'KNOCKOUT' | 'GROUPS';
+  matchLegMode: 'SINGLE' | 'TWO_LEGGED';
+}
+
+export interface GroupRef {
+  id: string;                    // UUID
+  name: string;                  // ex. "Grupo A"
+  position: number;
+}
+
+export interface MyPrediction {
+  id: string;                    // UUID do palpite
+  homeScore: number;
+  awayScore: number;
+  penaltyWinner: 'HOME' | 'AWAY' | null; // só em palpite de empate em KO
+  points: number;                // pontos já apurados (0 enquanto a partida não fecha)
+}
+```
+
+**Notas para o front:**
+- O `match` é o **mesmo** `MatchResponse` dos outros endpoints — `round` (a "etapa/rodada"), `phaseId`, `groupId`/`groupName`, `homeTeam`/`awayTeam` (com cores, escudo, `countryCode` pra bandeira), `homeScore`/`awayScore`, `status`, pênaltis etc. vivem lá dentro. Os refs `tournament`/`phase`/`group` adicionam os **nomes/tipos** que o `MatchResponse` não carrega, pra você montar o cabeçalho do card ("Copa da Firma · Fase de Grupos · Grupo A · Rodada 2") sem chamadas extras.
+- `myPrediction` é o palpite **do próprio usuário** — nunca redigido (diferente da visibilidade dos palpites alheios na §17). `null` = ainda não palpitou; mostre um CTA "Palpitar". Para gravar/editar, use o `PUT` de palpite da §17 com o `tournament.id` e o `match.id`.
+- `tournament.scoring` traz a pontuação de palpite do torneio (`exactScorePoints`/`winnerPoints`/`wrongPoints`), para o chip de pontos por faixa ser colorido igual à aba de partidas do torneio — sem fallback.
+- Para volumes maiores, use `from`/`to`/`limit` para paginar por rede em vez de baixar tudo e janelar no client.
+
+### `GET /api/users/me/matches/pending-count` → 200 `PendingPredictionsCountResponse`
+
+Agregado leve para o badge "X jogos esperando seu pitaco" no menu/tela inicial. Sem params, sem body.
+
+```ts
+export interface PendingPredictionsCountResponse {
+  count: number;
+}
+```
+
+Conta partidas que satisfazem **todas** as condições:
+- `status = SCHEDULED` e `scheduledAt` no **futuro** (`now < scheduledAt`) — janela de palpite ainda aberta;
+- de torneios **`IN_PROGRESS`** e ativos onde o usuário é **membro `ACTIVE`**;
+- nas quais o usuário **ainda não palpitou**.
+
+Acesso: basta estar autenticado (escopado ao próprio usuário). É mais barato que baixar a lista só pra contar — combina com o uso paginado do feed acima.
+
+---
+
 ## 15. Geração automática de partidas
 
 ### `POST /api/tournaments/{tid}/phases/{pid}/matches/generate` → 201 `MatchResponse[]`

@@ -69,7 +69,12 @@
       "PowerShell(Start-Sleep -Seconds 10; docker logs reidopitaco-api 2>&1 | Select-String -Pattern \"Web Push ativado|Started ReiDoPitaco|ERROR\" | Select-Object -Last 4; try { \"health: \" + \\(Invoke-WebRequest -Uri \"https://api.pitaco.dpdns.org/actuator/health\" -UseBasicParsing -TimeoutSec 30\\).StatusCode } catch { \"health falhou: $\\($_.Exception.Message\\)\" })",
       "PowerShell($c = Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1; if \\($c\\) { $p = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue; \"porta 8080 ocupada por: PID $\\($c.OwningProcess\\) — $\\($p.ProcessName\\) \\($\\($p.Path\\)\\)\" } else { \"nada escutando na 8080 local\" })",
       "Bash(./mvnw -q -o compile)",
-      "Bash(JAVA_HOME='C:\\\\Users\\\\diego/.jdks/corretto-21.0.10' ./mvnw -q -o compile)"
+      "Bash(JAVA_HOME='C:\\\\Users\\\\diego/.jdks/corretto-21.0.10' ./mvnw -q -o compile)",
+      "Bash(xargs grep -l \"TournamentAccessGuard\")",
+      "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; if \\(-not \\(Test-Path $env:JAVA_HOME\\)\\) { Get-ChildItem \"$env:USERPROFILE\\\\.jdks\" -ErrorAction SilentlyContinue | Select-Object Name }; & \"$env:JAVA_HOME\\\\bin\\\\java.exe\" -version)",
+      "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -o compile 2>&1 | Select-Object -Last 40)",
+      "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -o spring-boot:run 2>&1 | Select-String -Pattern \"Started ReiDoPitaco|APPLICATION FAILED|could not|QueryException|SemanticException|cast|Error creating bean|JpaSystemException|nested exception\" | Select-Object -First 30)",
+      "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -o spring-boot:run 2>&1 | Select-Object -Last 60)"
     ]
   }
 }
