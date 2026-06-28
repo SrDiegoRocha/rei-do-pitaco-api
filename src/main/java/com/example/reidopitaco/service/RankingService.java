@@ -6,6 +6,7 @@ import com.example.reidopitaco.entity.Prediction;
 import com.example.reidopitaco.entity.User;
 import com.example.reidopitaco.enums.MatchStatus;
 import com.example.reidopitaco.enums.MatchType;
+import com.example.reidopitaco.enums.TournamentMemberStatus;
 import com.example.reidopitaco.exception.BusinessException;
 import com.example.reidopitaco.exception.PhaseGroupNotFoundException;
 import com.example.reidopitaco.exception.PhaseNotFoundException;
@@ -47,11 +48,14 @@ public class RankingService {
     }
 
     /**
-     * Ranking do torneio, com filtros opcionais por fase, grupo, rodada e tipo de
-     * partida. Sem filtro, agrega todas as predictions. Com filtro, considera só os
-     * palpites das partidas que casam — útil para "ranking só da fase de grupos", "só
-     * do Grupo A", "só da rodada 3", "só da Final" vs "só da Disputa de 3º" (mesmo
-     * round, matchType diferente). {@code totalPredictions}/pontos refletem o recorte.
+     * Ranking do torneio, com filtros opcionais por fase, grupo, rodada, tipo de
+     * partida e status de membro. Sem filtro, agrega todas as predictions. Com filtro,
+     * considera só os palpites das partidas que casam — útil para "ranking só da fase de
+     * grupos", "só do Grupo A", "só da rodada 3", "só da Final" vs "só da Disputa de 3º"
+     * (mesmo round, matchType diferente). O {@code memberStatus} restringe a quem ainda
+     * está no torneio com aquele status (ex.: só {@code ACTIVE} esconde quem saiu/foi
+     * banido); {@code null} inclui todos que palpitaram. {@code totalPredictions}/pontos
+     * refletem o recorte.
      */
     @Transactional(readOnly = true)
     public List<RankingRowResponse> compute(
@@ -60,7 +64,8 @@ public class RankingService {
             UUID phaseId,
             UUID groupId,
             Integer round,
-            MatchType matchType
+            MatchType matchType,
+            TournamentMemberStatus memberStatus
     ) {
         accessGuard.requireViewable(requesterPublicId, tournamentPublicId);
 
@@ -81,7 +86,7 @@ public class RankingService {
         }
 
         List<Prediction> predictions = predictionRepository.findForRanking(
-                tournamentPublicId, phaseId, groupId, round, matchType);
+                tournamentPublicId, phaseId, groupId, round, matchType, memberStatus);
 
         Map<Long, Accumulator> table = new HashMap<>();
         for (Prediction p : predictions) {

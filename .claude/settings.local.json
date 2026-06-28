@@ -74,7 +74,13 @@
       "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; if \\(-not \\(Test-Path $env:JAVA_HOME\\)\\) { Get-ChildItem \"$env:USERPROFILE\\\\.jdks\" -ErrorAction SilentlyContinue | Select-Object Name }; & \"$env:JAVA_HOME\\\\bin\\\\java.exe\" -version)",
       "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -o compile 2>&1 | Select-Object -Last 40)",
       "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -o spring-boot:run 2>&1 | Select-String -Pattern \"Started ReiDoPitaco|APPLICATION FAILED|could not|QueryException|SemanticException|cast|Error creating bean|JpaSystemException|nested exception\" | Select-Object -First 30)",
-      "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -o spring-boot:run 2>&1 | Select-Object -Last 60)"
+      "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; .\\\\mvnw.cmd -q -o spring-boot:run 2>&1 | Select-Object -Last 60)",
+      "PowerShell(.\\\\mvnw.cmd -q -o compile 2>&1 | Select-Object -Last 30)",
+      "PowerShell($env:JAVA_HOME = \"$env:USERPROFILE\\\\.jdks\\\\corretto-21.0.10\"; if \\(-not \\(Test-Path $env:JAVA_HOME\\)\\) { Get-ChildItem \"$env:USERPROFILE\\\\.jdks\" | Select-Object Name } else { .\\\\mvnw.cmd -q -o compile 2>&1 | Select-Object -Last 30 })",
+      "Bash(docker exec reidopitaco-api *)",
+      "Bash(docker exec *)",
+      "PowerShell(docker exec reidopitaco-postgres-dev *)",
+      "PowerShell(docker volume ls *)"
     ]
   }
 }

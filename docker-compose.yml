@@ -1,14 +1,22 @@
+# Projeto Compose separado do de prod (docker-compose.selfhost.yml roda no projeto
+# default "rei-do-pitaco-api"). Sem este 'name', os dois compartilhariam o servico
+# 'postgres' e um recriaria o outro. Com projeto + container_name distintos, dev (5434)
+# e prod (5433) rodam ao mesmo tempo sem colidir.
+name: reidopitaco-dev
+
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: reidopitaco-postgres
+    container_name: reidopitaco-postgres-dev
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-reidopitaco}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      # Host na 5434 pra nao colidir com outro Postgres local na 5432 (ex.: postgres-knitt).
+      # Dentro do container continua 5432.
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - reidopitaco_pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,4 +27,8 @@ services:
 
 volumes:
   reidopitaco_pg_data:
+    # Volume pre-existente (criado quando o dev vivia no projeto default). 'external'
+    # diz ao Compose para apenas usa-lo, sem tentar cria-lo/possui-lo — evita o aviso
+    # de "ownership" entre projetos.
     name: reidopitaco_pg_data
+    external: true

@@ -4,11 +4,35 @@
 # vivem em %USERPROFILE%\.cloudflared e são montados no container.
 #   docker compose -f docker-compose.selfhost.yml up -d --build
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: reidopitaco-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-reidopitaco}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # Só acessível na própria máquina (admin via DBeaver/pgAdmin). NÃO exposto à
+    # internet — o Cloudflare Tunnel publica apenas a API. Porta de admin em 5433
+    # (e não 5432) pra NÃO colidir com o Postgres de dev local, que fica na 5432.
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - reidopitaco_pg_selfhost:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-reidopitaco}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build: .
     container_name: reidopitaco-api
     restart: unless-stopped
     env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
     expose:
       - "8080"
 
@@ -21,3 +45,7 @@ services:
     volumes:
       - ${USERPROFILE}/.cloudflared:/etc/cloudflared:ro
     command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+
+volumes:
+  reidopitaco_pg_selfhost:
+    name: reidopitaco_pg_selfhost

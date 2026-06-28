@@ -2,6 +2,7 @@ package com.example.reidopitaco.controller;
 
 import com.example.reidopitaco.dto.response.RankingRowResponse;
 import com.example.reidopitaco.enums.MatchType;
+import com.example.reidopitaco.enums.TournamentMemberStatus;
 import com.example.reidopitaco.service.RankingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,8 +27,9 @@ public class RankingController {
 
     /**
      * Ranking do torneio. Filtros opcionais e combináveis: {@code phaseId}, {@code groupId}
-     * (exige {@code phaseId}), {@code round} e {@code matchType} (REGULAR/THIRD_PLACE, separa
-     * Final da Disputa de 3º na mesma rodada). Sem filtro, agrega o torneio inteiro.
+     * (exige {@code phaseId}), {@code round}, {@code matchType} (REGULAR/THIRD_PLACE, separa
+     * Final da Disputa de 3º na mesma rodada) e {@code memberStatus} (ACTIVE/LEFT/BANNED —
+     * restringe o ranking aos membros naquele status). Sem filtro, agrega o torneio inteiro.
      */
     @GetMapping
     public ResponseEntity<List<RankingRowResponse>> ranking(
@@ -36,9 +38,10 @@ public class RankingController {
             @RequestParam(required = false) UUID phaseId,
             @RequestParam(required = false) UUID groupId,
             @RequestParam(required = false) Integer round,
-            @RequestParam(required = false) MatchType matchType
+            @RequestParam(required = false) MatchType matchType,
+            @RequestParam(required = false) TournamentMemberStatus memberStatus
     ) {
         return ResponseEntity.ok(rankingService.compute(
-                UUID.fromString(requesterPublicId), tournamentId, phaseId, groupId, round, matchType));
+                UUID.fromString(requesterPublicId), tournamentId, phaseId, groupId, round, matchType, memberStatus));
     }
 }

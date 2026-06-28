@@ -2,6 +2,7 @@ package com.example.reidopitaco.repository;
 
 import com.example.reidopitaco.entity.Prediction;
 import com.example.reidopitaco.enums.MatchType;
+import com.example.reidopitaco.enums.TournamentMemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,10 +47,14 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
 
     /**
      * Palpites do torneio para o cálculo do ranking, com filtros opcionais por fase,
-     * grupo, rodada e tipo de partida (cada um ignorado quando {@code null}). Faz fetch
-     * de user, match e group para o ranking não cair em N+1 (cada round-trip ao Neon
-     * custa caro). O {@code matchType} separa Final de Disputa de 3º, que compartilham
-     * o mesmo {@code round} em mata-mata.
+     * grupo, rodada, tipo de partida e status de membro (cada um ignorado quando
+     * {@code null}). Faz fetch de user, match e group para o ranking não cair em N+1
+     * (cada round-trip ao Neon custa caro). O {@code matchType} separa Final de Disputa
+     * de 3º, que compartilham o mesmo {@code round} em mata-mata.
+     *
+     * <p>O {@code memberStatus} restringe o ranking aos usuários cuja participação no
+     * torneio está naquele status (ex.: só {@code ACTIVE} esconde quem saiu/foi banido).
+     * Quando {@code null}, inclui todos que palpitaram, independente do status atual.
      *
      * <p>Cada filtro opcional usa {@code cast(:param as String) is null} no guard de
      * nulidade: o {@code cast} dá contexto de tipo ao placeholder (evita o
@@ -59,7 +64,7 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
      */
     @Query("""
             SELECT p FROM Prediction p
-            JOIN FETCH p.user
+            JOIN FETCH p.user u
             JOIN FETCH p.match m
             LEFT JOIN FETCH m.group g
             JOIN m.phase ph
@@ -68,12 +73,19 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
               AND (cast(:groupId AS String) IS NULL OR g.publicId = :groupId)
               AND (cast(:round AS String) IS NULL OR m.round = :round)
               AND (cast(:matchType AS String) IS NULL OR m.matchType = :matchType)
+              AND (cast(:memberStatus AS String) IS NULL OR EXISTS (
+                  SELECT 1 FROM TournamentMember tm
+                  WHERE tm.tournament.id = p.tournament.id
+                    AND tm.user.id = u.id
+                    AND tm.status = :memberStatus
+              ))
             """)
     List<Prediction> findForRanking(
             @Param("tournamentPublicId") UUID tournamentPublicId,
             @Param("phaseId") UUID phaseId,
             @Param("groupId") UUID groupId,
             @Param("round") Integer round,
-            @Param("matchType") MatchType matchType
+            @Param("matchType") MatchType matchType,
+            @Param("memberStatus") TournamentMemberStatus memberStatus
     );
 }

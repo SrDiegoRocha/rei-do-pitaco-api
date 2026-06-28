@@ -1355,6 +1355,7 @@ Sem paginação por enquanto — array completo. Acesso: aplica o controle de vi
 | `groupId` | UUID | Só partidas desse grupo. **Exige `phaseId`** (grupo pertence a uma fase): sem ele → **400** `groupId requires phaseId (a group belongs to a phase)`. **404** `Group not found` se o grupo não pertence à fase. |
 | `round` | int | Só partidas dessa rodada. (O número de rodada se repete entre fases — combine com `phaseId` para isolar uma rodada específica.) |
 | `matchType` | enum `REGULAR` \| `THIRD_PLACE` | Só partidas desse tipo. Separa a **Final** (`REGULAR`) da **Disputa de 3º** (`THIRD_PLACE`), que compartilham o mesmo `round` em mata-mata. Valor inválido → **400** `Invalid value for parameter 'matchType'`. |
+| `memberStatus` | enum `ACTIVE` \| `LEFT` \| `BANNED` | Restringe o ranking aos membros cuja participação no torneio está naquele status. **Omitido = todos** que palpitaram, independente do status atual (comportamento anterior, inalterado). `ACTIVE` esconde quem saiu (`LEFT`) ou foi banido (`BANNED`); `LEFT`/`BANNED` mostram só esses. Valor inválido → **400** `Invalid value for parameter 'memberStatus'`. |
 
 Sem nenhum filtro, agrega o torneio inteiro (comportamento anterior, inalterado). Com filtros, **todos os campos** do `RankingRowResponse` (`totalPoints`, `exactScoreHits`, `winnerHits`, `wrongs`, `totalPredictions`) passam a refletir apenas o recorte filtrado, e `position` é recalculado dentro do recorte. Filtros válidos sem partidas correspondentes retornam `[]`.
 
@@ -1364,6 +1365,7 @@ Exemplos:
 - `GET .../ranking?phaseId={fase}&round=3` — ranking só da 3ª rodada daquela fase.
 - `GET .../ranking?phaseId={mata-mata}&round={final}&matchType=REGULAR` — só a Final.
 - `GET .../ranking?phaseId={mata-mata}&round={final}&matchType=THIRD_PLACE` — só a Disputa de 3º.
+- `GET .../ranking?memberStatus=ACTIVE` — ranking só dos membros ativos (esconde quem saiu/foi banido).
 
 ---
 
