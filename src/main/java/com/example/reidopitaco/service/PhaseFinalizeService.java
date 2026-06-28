@@ -8,6 +8,7 @@ import com.example.reidopitaco.entity.Tournament;
 import com.example.reidopitaco.entity.TournamentPhase;
 import com.example.reidopitaco.entity.TournamentZone;
 import com.example.reidopitaco.enums.MatchStatus;
+import com.example.reidopitaco.enums.TiebreakCriteria;
 import com.example.reidopitaco.enums.TournamentPhaseType;
 import com.example.reidopitaco.enums.ZoneSelectionMode;
 import com.example.reidopitaco.exception.NotTournamentOwnerException;
@@ -99,7 +100,7 @@ public class PhaseFinalizeService {
 
             List<UUID> teamsToPromote = zone.getSelectionMode() == ZoneSelectionMode.ALL
                     ? collectAllInRange(standings, zone)
-                    : collectBestRanked(standings, zone);
+                    : collectBestRanked(standings, zone, tournament);
 
             promoteTeams(zone.getNextPhase(), teamsToPromote);
         }
@@ -135,7 +136,7 @@ public class PhaseFinalizeService {
         return result;
     }
 
-    private List<UUID> collectBestRanked(StandingsResponse standings, TournamentZone zone) {
+    private List<UUID> collectBestRanked(StandingsResponse standings, TournamentZone zone, Tournament tournament) {
         int targetPosition = zone.getFromPosition();
         int needed = zone.getBestRankedCount() == null ? 0 : zone.getBestRankedCount();
 
@@ -148,14 +149,21 @@ public class PhaseFinalizeService {
             }
         }
 
-        candidates.sort(Comparator
-                .comparingInt(StandingsResponse.StandingRow::points).reversed()
-                .thenComparing(Comparator.comparingInt(StandingsResponse.StandingRow::wins).reversed())
-                .thenComparing(Comparator.comparingInt(StandingsResponse.StandingRow::goalDifference).reversed())
-                .thenComparing(Comparator.comparingInt(StandingsResponse.StandingRow::goalsFor).reversed())
-                .thenComparing(Comparator.comparingInt(StandingsResponse.StandingRow::losses))
-                .thenComparing((a, b) -> a.teamName().compareToIgnoreCase(b.teamName()))
-        );
+        // Ranqueia pelos critérios de desempate configurados no torneio — mesma fonte de verdade da
+        // projeção `qualifies` do StandingsService, para que finalize e standings nunca divirjam.
+        List<TiebreakCriteria> tiebreaks = tournament.getTiebreakCriteria().stream()
+                .sorted(Comparator.comparingInt(c -> c.getPosition()))
+                .map(c -> c.getCriteria())
+                .toList();
+        candidates.sort(StandingsService.bestRankedComparator(
+                tiebreaks,
+                StandingsResponse.StandingRow::points,
+                StandingsResponse.StandingRow::wins,
+                StandingsResponse.StandingRow::goalDifference,
+                StandingsResponse.StandingRow::goalsFor,
+                StandingsResponse.StandingRow::losses,
+                StandingsResponse.StandingRow::teamName
+        ));
 
         return candidates.stream()
                 .limit(needed)

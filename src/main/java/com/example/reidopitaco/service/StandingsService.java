@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 @Service
 public class StandingsService {
@@ -102,7 +104,8 @@ public class StandingsService {
 
         // 2. Resolve as zonas: por posição (ALL) e os classificados de cada zona BEST_RANKED.
         List<TournamentZone> zones = zoneRepository.findAllByPhaseIdOrderByPositionAsc(phase.getId());
-        Set<Long> bestRankedQualifiers = bestRankedQualifiers(tables, zones);
+        Set<Long> bestRankedQualifiers =
+                bestRankedQualifiers(tables, zones, orderedTiebreaks(tournament), allMatches);
 
         // 3. Monta as linhas já com o desfecho de zona.
         List<StandingsResponse.GroupStandings> groups = new ArrayList<>(tables.size());
@@ -175,11 +178,25 @@ public class StandingsService {
 
     /**
      * IDs (internos) dos times que se classificam pelas zonas BEST_RANKED. Para cada zona desse tipo,
-     * junta os times da posição-alvo de todos os grupos, ranqueia entre si com o mesmo critério do
-     * {@code finalize} (pontos → vitórias → saldo → gols pró → menos derrotas → nome) e pega os
+     * junta os times da posição-alvo de todos os grupos, ranqueia entre si com os critérios de
+     * desempate configurados no torneio (mesma fonte de verdade do {@code finalize}) e pega os
      * {@code bestRankedCount} melhores. Provisório enquanto a fase não terminou.
      */
-    private Set<Long> bestRankedQualifiers(List<GroupTable> tables, List<TournamentZone> zones) {
+    private Set<Long> bestRankedQualifiers(
+            List<GroupTable> tables,
+            List<TournamentZone> zones,
+            List<TiebreakCriteria> tiebreaks,
+            List<Match> allMatches
+    ) {
+        Comparator<StandingAccumulator> comparator = bestRankedComparator(
+                tiebreaks,
+                s -> s.points,
+                s -> s.wins,
+                s -> s.goalsFor - s.goalsAgainst,
+                s -> s.goalsFor,
+                s -> s.losses,
+                s -> s.team.getName()
+        );
         Set<Long> qualifiers = new HashSet<>();
         for (TournamentZone zone : zones) {
             if (zone.getSelectionMode() != ZoneSelectionMode.BEST_RANKED
@@ -194,20 +211,51 @@ public class StandingsService {
                     candidates.add(t.accumulators().get(index));
                 }
             }
-            candidates.sort(
-                    Comparator.comparingInt((StandingAccumulator s) -> s.points).reversed()
-                            .thenComparing(Comparator.comparingInt((StandingAccumulator s) -> s.wins).reversed())
-                            .thenComparing(Comparator.comparingInt(
-                                    (StandingAccumulator s) -> s.goalsFor - s.goalsAgainst).reversed())
-                            .thenComparing(Comparator.comparingInt((StandingAccumulator s) -> s.goalsFor).reversed())
-                            .thenComparing(Comparator.comparingInt((StandingAccumulator s) -> s.losses))
-                            .thenComparing((a, b) -> a.team.getName().compareToIgnoreCase(b.team.getName()))
-            );
+            candidates.sort(comparator);
             candidates.stream()
                     .limit(zone.getBestRankedCount())
                     .forEach(c -> qualifiers.add(c.team.getId()));
         }
         return qualifiers;
+    }
+
+    /** Critérios de desempate do torneio, ordenados por {@code position}. */
+    private List<TiebreakCriteria> orderedTiebreaks(Tournament tournament) {
+        return tournament.getTiebreakCriteria().stream()
+                .sorted(Comparator.comparingInt(c -> c.getPosition()))
+                .map(c -> c.getCriteria())
+                .toList();
+    }
+
+    /**
+     * Comparador para o ranqueamento cross-grupo dos "melhores N", derivado dos critérios de
+     * desempate configurados. {@code HEAD_TO_HEAD} não se aplica aqui — os candidatos vêm de grupos
+     * diferentes e nunca se enfrentaram — então vira no-op; os demais critérios ordenam. Genérico
+     * para ser reusado tanto sobre {@link StandingAccumulator} (projeção) quanto sobre
+     * {@code StandingRow} (finalize), garantindo uma única fonte de verdade.
+     */
+    static <T> Comparator<T> bestRankedComparator(
+            List<TiebreakCriteria> tiebreaks,
+            ToIntFunction<T> points,
+            ToIntFunction<T> wins,
+            ToIntFunction<T> goalDifference,
+            ToIntFunction<T> goalsFor,
+            ToIntFunction<T> losses,
+            Function<T, String> name
+    ) {
+        Comparator<T> chain = (a, b) -> 0;
+        for (TiebreakCriteria criterion : tiebreaks) {
+            Comparator<T> step = switch (criterion) {
+                case POINTS -> Comparator.comparingInt(points).reversed();
+                case WINS -> Comparator.comparingInt(wins).reversed();
+                case GOAL_DIFFERENCE -> Comparator.comparingInt(goalDifference).reversed();
+                case GOALS_FOR -> Comparator.comparingInt(goalsFor).reversed();
+                case FEWEST_LOSSES -> Comparator.comparingInt(losses);
+                case HEAD_TO_HEAD -> (a, b) -> 0;
+            };
+            chain = chain.thenComparing(step);
+        }
+        return chain.thenComparing(Comparator.comparing(name, String.CASE_INSENSITIVE_ORDER));
     }
 
     private List<StandingAccumulator> orderedTable(
@@ -269,10 +317,7 @@ public class StandingsService {
                     + acc.losses * settings.getLossPoints();
         }
 
-        List<TiebreakCriteria> tiebreaks = tournament.getTiebreakCriteria().stream()
-                .sorted(Comparator.comparingInt(c -> c.getPosition()))
-                .map(c -> c.getCriteria())
-                .toList();
+        List<TiebreakCriteria> tiebreaks = orderedTiebreaks(tournament);
 
         List<StandingAccumulator> ordered = new ArrayList<>(table.values());
         ordered.sort(buildComparator(tiebreaks, allMatches, group));
