@@ -32,6 +32,8 @@ public class MatchMapper {
                 match.getScheduledAt(),
                 match.getHomeScore(),
                 match.getAwayScore(),
+                match.getHomeExtraTimeScore(),
+                match.getAwayExtraTimeScore(),
                 match.getHomePenalties(),
                 match.getAwayPenalties(),
                 penalty.eligible(),

@@ -12,6 +12,8 @@ public record PredictionResponse(
         String userName,
         Integer homeScore,
         Integer awayScore,
+        Integer homeExtraTimeScore,
+        Integer awayExtraTimeScore,
         MatchSide penaltyWinner,
         Integer points,
         Instant createdAt,

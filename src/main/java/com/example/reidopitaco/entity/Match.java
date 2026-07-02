@@ -71,6 +71,16 @@ public class Match {
     @Column(name = "away_score")
     private Integer awayScore;
 
+    /**
+     * Placar da prorrogação (cumulativo, inclui o tempo normal). Só em mata-mata de jogo único
+     * (KNOCKOUT SINGLE) que terminou empatado no tempo normal. {@code null} = não houve prorrogação.
+     */
+    @Column(name = "home_extra_time_score")
+    private Integer homeExtraTimeScore;
+
+    @Column(name = "away_extra_time_score")
+    private Integer awayExtraTimeScore;
+
     @Column(name = "home_penalties")
     private Integer homePenalties;
 

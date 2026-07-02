@@ -11,6 +11,7 @@ import com.example.reidopitaco.entity.PhaseTeam;
 import com.example.reidopitaco.entity.Team;
 import com.example.reidopitaco.entity.Tournament;
 import com.example.reidopitaco.entity.TournamentPhase;
+import com.example.reidopitaco.enums.MatchLegMode;
 import com.example.reidopitaco.enums.MatchStatus;
 import com.example.reidopitaco.enums.MatchType;
 import com.example.reidopitaco.enums.TournamentPhaseType;
@@ -248,6 +249,7 @@ public class MatchService {
 
         match.setHomeScore(request.homeScore());
         match.setAwayScore(request.awayScore());
+        applyExtraTime(phase, match, request);
         applyPenalties(phase, match, request);
         match.setStatus(MatchStatus.COMPLETED);
         Match saved = matchRepository.saveAndFlush(match);
@@ -270,6 +272,8 @@ public class MatchService {
         match.setStatus(MatchStatus.CANCELLED);
         match.setHomeScore(null);
         match.setAwayScore(null);
+        match.setHomeExtraTimeScore(null);
+        match.setAwayExtraTimeScore(null);
         match.setHomePenalties(null);
         match.setAwayPenalties(null);
         predictionService.zeroPointsFor(match);
@@ -360,6 +364,36 @@ public class MatchService {
         return type;
     }
 
+    /**
+     * Prorrogação do resultado real. Só em KNOCKOUT de jogo único (SINGLE) empatado no tempo normal.
+     * O placar é cumulativo (inclui os gols do tempo normal), então nunca pode ser menor que o do
+     * tempo normal por time. Ambos os campos vêm juntos; ausentes zeram a prorrogação da partida.
+     */
+    private void applyExtraTime(TournamentPhase phase, Match match, SetMatchResultRequest request) {
+        Integer he = request.homeExtraTimeScore();
+        Integer ae = request.awayExtraTimeScore();
+        if (he == null && ae == null) {
+            match.setHomeExtraTimeScore(null);
+            match.setAwayExtraTimeScore(null);
+            return;
+        }
+        if (he == null || ae == null) {
+            throw new InvalidMatchException("Both extra-time scores must be provided together");
+        }
+        if (phase.getPhaseType() != TournamentPhaseType.KNOCKOUT
+                || phase.getMatchLegMode() != MatchLegMode.SINGLE) {
+            throw new InvalidMatchException("Extra time only applies to single-leg KNOCKOUT matches");
+        }
+        if (!match.getHomeScore().equals(match.getAwayScore())) {
+            throw new InvalidMatchException("Extra time only applies when regular time ended in a draw");
+        }
+        if (he < match.getHomeScore() || ae < match.getAwayScore()) {
+            throw new InvalidMatchException("Extra-time score cannot be lower than the regular-time score");
+        }
+        match.setHomeExtraTimeScore(he);
+        match.setAwayExtraTimeScore(ae);
+    }
+
     private void applyPenalties(TournamentPhase phase, Match match, SetMatchResultRequest request) {
         Integer hp = request.homePenalties();
         Integer ap = request.awayPenalties();
@@ -376,6 +410,12 @@ public class MatchService {
         }
         if (hp.equals(ap)) {
             throw new InvalidMatchException("Penalty shootout cannot end in a draw");
+        }
+        // Jogo único com prorrogação lançada: os pênaltis só fazem sentido se a prorrogação empatou.
+        if (phase.getMatchLegMode() == MatchLegMode.SINGLE
+                && match.getHomeExtraTimeScore() != null
+                && !match.getHomeExtraTimeScore().equals(match.getAwayExtraTimeScore())) {
+            throw new InvalidMatchException("Penalties only apply when extra time ended in a draw");
         }
         match.setHomePenalties(hp);
         match.setAwayPenalties(ap);

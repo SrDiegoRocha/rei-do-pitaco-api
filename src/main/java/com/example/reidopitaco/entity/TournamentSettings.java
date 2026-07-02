@@ -54,6 +54,16 @@ public class TournamentSettings {
     @Column(name = "wrong_points", nullable = false)
     private int wrongPoints;
 
+    // Componentes extras de mata-mata de jogo único, somados aos pontos do tempo normal.
+    @Column(name = "extra_time_exact_score_points", nullable = false)
+    private int extraTimeExactScorePoints;
+
+    @Column(name = "extra_time_winner_points", nullable = false)
+    private int extraTimeWinnerPoints;
+
+    @Column(name = "penalty_winner_points", nullable = false)
+    private int penaltyWinnerPoints;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

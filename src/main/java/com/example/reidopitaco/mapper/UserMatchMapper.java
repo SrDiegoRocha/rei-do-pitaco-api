@@ -37,6 +37,8 @@ public class UserMatchMapper {
                 myPrediction.getPublicId(),
                 myPrediction.getHomeScore(),
                 myPrediction.getAwayScore(),
+                myPrediction.getHomeExtraTimeScore(),
+                myPrediction.getAwayExtraTimeScore(),
                 myPrediction.getPenaltyWinner(),
                 myPrediction.getPoints()
         );
@@ -45,7 +47,10 @@ public class UserMatchMapper {
         UserMatchResponse.ScoringRef scoringRef = settings == null ? null : new UserMatchResponse.ScoringRef(
                 settings.getExactScorePoints(),
                 settings.getWinnerPoints(),
-                settings.getWrongPoints()
+                settings.getWrongPoints(),
+                settings.getExtraTimeExactScorePoints(),
+                settings.getExtraTimeWinnerPoints(),
+                settings.getPenaltyWinnerPoints()
         );
 
         return new UserMatchResponse(

@@ -221,6 +221,13 @@ public class TournamentService {
                 .exactScorePoints(payload.exactScorePoints())
                 .winnerPoints(payload.winnerPoints())
                 .wrongPoints(payload.wrongPoints())
+                // Opcionais no payload: ausentes assumem os defaults (2/1/2).
+                .extraTimeExactScorePoints(
+                        payload.extraTimeExactScorePoints() != null ? payload.extraTimeExactScorePoints() : 2)
+                .extraTimeWinnerPoints(
+                        payload.extraTimeWinnerPoints() != null ? payload.extraTimeWinnerPoints() : 1)
+                .penaltyWinnerPoints(
+                        payload.penaltyWinnerPoints() != null ? payload.penaltyWinnerPoints() : 2)
                 .build();
     }
 
@@ -232,6 +239,16 @@ public class TournamentService {
         settings.setExactScorePoints(payload.exactScorePoints());
         settings.setWinnerPoints(payload.winnerPoints());
         settings.setWrongPoints(payload.wrongPoints());
+        // Opcionais: ausentes (null) preservam o valor atual, para clientes que não enviam esses campos.
+        if (payload.extraTimeExactScorePoints() != null) {
+            settings.setExtraTimeExactScorePoints(payload.extraTimeExactScorePoints());
+        }
+        if (payload.extraTimeWinnerPoints() != null) {
+            settings.setExtraTimeWinnerPoints(payload.extraTimeWinnerPoints());
+        }
+        if (payload.penaltyWinnerPoints() != null) {
+            settings.setPenaltyWinnerPoints(payload.penaltyWinnerPoints());
+        }
     }
 
     private void applyTiebreakCriteria(Tournament tournament, List<TiebreakCriteria> criteria) {

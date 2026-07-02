@@ -20,6 +20,8 @@ public record MatchResponse(
         Instant scheduledAt,
         Integer homeScore,
         Integer awayScore,
+        Integer homeExtraTimeScore,   // placar da prorrogação (KO jogo único); null se não houve
+        Integer awayExtraTimeScore,
         Integer homePenalties,
         Integer awayPenalties,
         // Apoio ao palpite de pênaltis (ver # Sistema de palpites):

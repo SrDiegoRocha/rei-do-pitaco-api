@@ -62,6 +62,17 @@ public class Prediction {
     private int awayScore;
 
     /**
+     * Placar palpitado da prorrogação (cumulativo, {@code >=} placar do tempo normal por time).
+     * Só em mata-mata de jogo único quando o palpite do tempo normal é empate. {@code null} quando
+     * o palpite não envolve prorrogação.
+     */
+    @Column(name = "home_extra_time_score")
+    private Integer homeExtraTimeScore;
+
+    @Column(name = "away_extra_time_score")
+    private Integer awayExtraTimeScore;
+
+    /**
      * Quem o palpiteiro acha que passa nos pênaltis (lado do confronto). Só preenchido em
      * palpite de empate em jogo único de mata-mata, ou na perna de volta de ida-e-volta.
      * {@code null} quando o palpite não envolve pênaltis.

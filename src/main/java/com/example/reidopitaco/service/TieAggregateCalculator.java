@@ -37,8 +37,10 @@ public class TieAggregateCalculator {
                 continue;
             }
             boolean orientedHome = m.getHomeTeam().getId().equals(home.getId());
-            int hs = m.getHomeScore() == null ? 0 : m.getHomeScore();
-            int as = m.getAwayScore() == null ? 0 : m.getAwayScore();
+            // Em jogo único de mata-mata, a prorrogação é o placar decisivo (cumulativo) — usa-a
+            // quando presente. Em ida-e-volta não há prorrogação, então cai sempre no tempo normal.
+            int hs = effectiveHome(m);
+            int as = effectiveAway(m);
             if (orientedHome) {
                 homeAgg += hs;
                 awayAgg += as;
@@ -67,6 +69,22 @@ public class TieAggregateCalculator {
             }
         }
         return new TieAggregate(home, away, homeAgg, awayAgg, homePens, awayPens, winner);
+    }
+
+    /** Placar decisivo do mandante da perna: prorrogação se lançada, senão tempo normal. */
+    private int effectiveHome(Match m) {
+        if (m.getHomeExtraTimeScore() != null) {
+            return m.getHomeExtraTimeScore();
+        }
+        return m.getHomeScore() == null ? 0 : m.getHomeScore();
+    }
+
+    /** Placar decisivo do visitante da perna: prorrogação se lançada, senão tempo normal. */
+    private int effectiveAway(Match m) {
+        if (m.getAwayExtraTimeScore() != null) {
+            return m.getAwayExtraTimeScore();
+        }
+        return m.getAwayScore() == null ? 0 : m.getAwayScore();
     }
 
     /** Vencedor do confronto, ou {@code null} se empate no agregado. */

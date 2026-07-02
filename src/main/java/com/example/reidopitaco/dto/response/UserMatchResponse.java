@@ -41,9 +41,12 @@ public record UserMatchResponse(
      * sem precisar buscar o torneio inteiro.
      */
     public record ScoringRef(
-            int exactScorePoints,        // acertou o placar exato
-            int winnerPoints,            // acertou só o vencedor/empate
-            int wrongPoints              // errou o desfecho
+            int exactScorePoints,             // acertou o placar exato (tempo normal)
+            int winnerPoints,                 // acertou só o vencedor/empate (tempo normal)
+            int wrongPoints,                  // errou o desfecho (tempo normal)
+            int extraTimeExactScorePoints,    // acertou o placar exato da prorrogação
+            int extraTimeWinnerPoints,        // acertou só quem vence a prorrogação
+            int penaltyWinnerPoints           // acertou quem passa nos pênaltis
     ) {
     }
 
@@ -71,6 +74,8 @@ public record UserMatchResponse(
             UUID id,
             int homeScore,
             int awayScore,
+            Integer homeExtraTimeScore,  // placar palpitado da prorrogação (KO jogo único); senão null
+            Integer awayExtraTimeScore,
             MatchSide penaltyWinner,     // só em palpite de empate em KO; senão null
             int points                   // pontos já apurados (0 enquanto a partida não fecha)
     ) {

@@ -16,6 +16,12 @@ public record TournamentSettingsPayload(
         @NotNull @PositiveOrZero Integer winnerPoints,
         @NotNull @PositiveOrZero Integer wrongPoints,
 
+        // Componentes de mata-mata de jogo único. Opcionais para não quebrar clientes antigos:
+        // ausentes (null) => default no create (2/1/2) e preservam o valor atual no update.
+        @PositiveOrZero Integer extraTimeExactScorePoints,
+        @PositiveOrZero Integer extraTimeWinnerPoints,
+        @PositiveOrZero Integer penaltyWinnerPoints,
+
         @NotEmpty List<TiebreakCriteria> tiebreakCriteria
 ) {
 }

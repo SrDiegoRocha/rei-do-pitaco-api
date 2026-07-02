@@ -84,7 +84,7 @@ public class PredictionService {
 
         Match match = loadMatchInTournament(tournament, matchPublicId);
         ensurePredictionsOpen(match);
-        validatePenaltyWinner(match, request);
+        validatePredictionCascade(match, request);
 
         User user = userRepository.findByPublicId(userPublicId)
                 .orElseThrow(TournamentNotFoundException::new);
@@ -100,12 +100,16 @@ public class PredictionService {
                     .user(user)
                     .homeScore(request.homeScore())
                     .awayScore(request.awayScore())
+                    .homeExtraTimeScore(request.homeExtraTimeScore())
+                    .awayExtraTimeScore(request.awayExtraTimeScore())
                     .penaltyWinner(request.penaltyWinner())
                     .points(0)
                     .build();
         } else {
             prediction.setHomeScore(request.homeScore());
             prediction.setAwayScore(request.awayScore());
+            prediction.setHomeExtraTimeScore(request.homeExtraTimeScore());
+            prediction.setAwayExtraTimeScore(request.awayExtraTimeScore());
             prediction.setPenaltyWinner(request.penaltyWinner());
         }
 
@@ -190,7 +194,12 @@ public class PredictionService {
         long draw = 0;
         long awayWin = 0;
         for (Prediction p : predictionRepository.findAllByMatchPublicId(matchPublicId)) {
-            int cmp = Integer.compare(p.getHomeScore(), p.getAwayScore());
+            // Desfecho palpitado: usa o placar da prorrogação quando informado (mais preciso em
+            // mata-mata de jogo único — ex.: palpite 1x1 no normal e 2x1 na prorrogação conta como
+            // vitória do mandante, não empate), senão cai no placar do tempo normal.
+            int predHome = p.getHomeExtraTimeScore() != null ? p.getHomeExtraTimeScore() : p.getHomeScore();
+            int predAway = p.getAwayExtraTimeScore() != null ? p.getAwayExtraTimeScore() : p.getAwayScore();
+            int cmp = Integer.compare(predHome, predAway);
             if (cmp > 0) {
                 homeWin++;
             } else if (cmp < 0) {
@@ -346,46 +355,85 @@ public class PredictionService {
         predictionRepository.saveAll(predictions);
     }
 
+    /**
+     * Pontuação de um palpite. Os componentes são <b>somados</b> (não substituem uns aos outros):
+     * <ol>
+     *   <li><b>Tempo normal</b>: placar exato → {@code exactScorePoints}; senão acerto do
+     *       vencedor/empate → {@code winnerPoints}; senão {@code wrongPoints}.</li>
+     *   <li><b>Prorrogação</b> (só quando a partida foi de fato à prorrogação — KO jogo único):
+     *       placar exato da prorrogação → {@code extraTimeExactScorePoints}; senão acerto de quem
+     *       vence a prorrogação → {@code extraTimeWinnerPoints}; senão 0. Só conta se o palpiteiro
+     *       informou o placar da prorrogação.</li>
+     *   <li><b>Pênaltis</b> (só quando o confronto foi decidido nos pênaltis): acertar quem passa →
+     *       {@code penaltyWinnerPoints}; senão 0.</li>
+     * </ol>
+     * Ex.: acertar o empate no tempo normal + placar exato da prorrogação + quem passa nos pênaltis
+     * soma os três valores.
+     */
     int scoreFor(Prediction prediction, Match match, TournamentSettings settings) {
         if (match.getStatus() != MatchStatus.COMPLETED
                 || match.getHomeScore() == null
                 || match.getAwayScore() == null) {
             return 0;
         }
+        int total = regularTimeScore(prediction, match, settings);
+        total += extraTimeScore(prediction, match, settings);
+        total += penaltyScore(prediction, match, settings);
+        return total;
+    }
+
+    /** Componente do tempo normal: placar exato → vencedor → erro. */
+    private int regularTimeScore(Prediction prediction, Match match, TournamentSettings settings) {
         int actualHome = match.getHomeScore();
         int actualAway = match.getAwayScore();
         int guessedHome = prediction.getHomeScore();
         int guessedAway = prediction.getAwayScore();
-        boolean exactScore = guessedHome == actualHome && guessedAway == actualAway;
-
-        // Confronto decidido nos pênaltis E o palpiteiro indicou quem passa: combina o acerto
-        // do placar exato com o acerto de quem se classificou. Ver tabela no # Sistema de palpites.
-        Team progressor = actualPenaltyProgressor(match);
-        if (progressor != null && prediction.getPenaltyWinner() != null) {
-            Team guessedTeam = prediction.getPenaltyWinner() == MatchSide.HOME
-                    ? match.getHomeTeam()
-                    : match.getAwayTeam();
-            boolean advancerCorrect = guessedTeam.getId().equals(progressor.getId());
-            int hits = (exactScore ? 1 : 0) + (advancerCorrect ? 1 : 0);
-            if (hits == 2) {
-                return settings.getExactScorePoints();
-            }
-            if (hits == 1) {
-                return settings.getWinnerPoints();
-            }
-            return settings.getWrongPoints();
-        }
-
-        // Pontuação normal (sem pênaltis em jogo): placar exato → vencedor → erro.
-        if (exactScore) {
+        if (guessedHome == actualHome && guessedAway == actualAway) {
             return settings.getExactScorePoints();
         }
-        int actualOutcome = Integer.compare(actualHome, actualAway);
-        int guessedOutcome = Integer.compare(guessedHome, guessedAway);
-        if (actualOutcome == guessedOutcome) {
+        if (Integer.compare(guessedHome, guessedAway) == Integer.compare(actualHome, actualAway)) {
             return settings.getWinnerPoints();
         }
         return settings.getWrongPoints();
+    }
+
+    /**
+     * Componente da prorrogação, somado ao tempo normal. Só quando a partida foi à prorrogação
+     * (placar de ET real presente) e o palpiteiro informou o placar da prorrogação. Placar exato →
+     * {@code extraTimeExactScorePoints}; só o vencedor → {@code extraTimeWinnerPoints}; senão 0.
+     */
+    private int extraTimeScore(Prediction prediction, Match match, TournamentSettings settings) {
+        if (match.getHomeExtraTimeScore() == null || match.getAwayExtraTimeScore() == null
+                || prediction.getHomeExtraTimeScore() == null
+                || prediction.getAwayExtraTimeScore() == null) {
+            return 0;
+        }
+        int actualHome = match.getHomeExtraTimeScore();
+        int actualAway = match.getAwayExtraTimeScore();
+        int guessedHome = prediction.getHomeExtraTimeScore();
+        int guessedAway = prediction.getAwayExtraTimeScore();
+        if (guessedHome == actualHome && guessedAway == actualAway) {
+            return settings.getExtraTimeExactScorePoints();
+        }
+        if (Integer.compare(guessedHome, guessedAway) == Integer.compare(actualHome, actualAway)) {
+            return settings.getExtraTimeWinnerPoints();
+        }
+        return 0;
+    }
+
+    /**
+     * Componente dos pênaltis, somado aos demais. Só quando o confronto foi decidido nos pênaltis
+     * e o palpiteiro indicou quem passa. Acertar quem se classificou → {@code penaltyWinnerPoints}.
+     */
+    private int penaltyScore(Prediction prediction, Match match, TournamentSettings settings) {
+        Team progressor = actualPenaltyProgressor(match);
+        if (progressor == null || prediction.getPenaltyWinner() == null) {
+            return 0;
+        }
+        Team guessedTeam = prediction.getPenaltyWinner() == MatchSide.HOME
+                ? match.getHomeTeam()
+                : match.getAwayTeam();
+        return guessedTeam.getId().equals(progressor.getId()) ? settings.getPenaltyWinnerPoints() : 0;
     }
 
     /**
@@ -403,8 +451,14 @@ public class PredictionService {
             if (match.getHomePenalties() == null || match.getAwayPenalties() == null) {
                 return null;
             }
-            if (match.getHomeScore().intValue() != match.getAwayScore().intValue()) {
-                return null; // decidido no tempo normal — pênaltis não valem
+            // Placar decisivo: prorrogação se houve, senão o tempo normal. Pênaltis só valem se esse
+            // placar terminou empatado (senão o confronto foi decidido antes da disputa).
+            int decisiveHome = match.getHomeExtraTimeScore() != null
+                    ? match.getHomeExtraTimeScore() : match.getHomeScore();
+            int decisiveAway = match.getAwayExtraTimeScore() != null
+                    ? match.getAwayExtraTimeScore() : match.getAwayScore();
+            if (decisiveHome != decisiveAway) {
+                return null; // decidido no tempo normal/prorrogação — pênaltis não valem
             }
             return match.getHomePenalties() > match.getAwayPenalties()
                     ? match.getHomeTeam()
@@ -419,13 +473,71 @@ public class PredictionService {
     }
 
     /**
-     * Valida o {@code penaltyWinner}: só é aceito em confronto que pode ir aos pênaltis (jogo único
-     * de mata-mata ou perna de volta) e quando o palpite leva o confronto a empate. O gatilho do
-     * empate é o <b>agregado</b> (gols reais das pernas anteriores + placar palpitado desta), não o
-     * placar isolado — em jogo único o agregado anterior é 0x0, então equivale ao placar da partida.
-     * Nesses casos elegíveis com empate, é obrigatório.
+     * Valida a cascata do palpite de mata-mata.
+     *
+     * <p><b>Jogo único (KNOCKOUT SINGLE)</b> — cascata obrigatória:
+     * <ul>
+     *   <li>Palpite de empate no tempo normal ⇒ é obrigatório o placar da prorrogação
+     *       ({@code >=} tempo normal por time, ambos juntos).</li>
+     *   <li>Se a prorrogação palpitada também for empate ⇒ é obrigatório {@code penaltyWinner}.</li>
+     *   <li>Se a prorrogação palpitada tiver vencedor ⇒ {@code penaltyWinner} não é aceito.</li>
+     *   <li>Palpite não-empate no tempo normal ⇒ prorrogação e {@code penaltyWinner} não são aceitos.</li>
+     * </ul>
+     *
+     * <p><b>Demais confrontos</b> — a prorrogação não se aplica. {@code penaltyWinner} segue a regra
+     * do agregado: aceito/obrigatório apenas na perna de volta de ida-e-volta empatada no agregado.
      */
-    private void validatePenaltyWinner(Match match, PlacePredictionRequest request) {
+    private void validatePredictionCascade(Match match, PlacePredictionRequest request) {
+        TournamentPhase phase = match.getPhase();
+        boolean singleLegKo = phase.getPhaseType() == TournamentPhaseType.KNOCKOUT
+                && phase.getMatchLegMode() == MatchLegMode.SINGLE;
+
+        Integer etHome = request.homeExtraTimeScore();
+        Integer etAway = request.awayExtraTimeScore();
+        boolean hasExtraTime = etHome != null || etAway != null;
+
+        if (!singleLegKo) {
+            if (hasExtraTime) {
+                throw badRequest("extraTimeScore only applies to a single-leg knockout match");
+            }
+            validateTwoLeggedPenaltyWinner(match, request);
+            return;
+        }
+
+        boolean predictedRegularDraw = request.homeScore().equals(request.awayScore());
+        if (!predictedRegularDraw) {
+            if (hasExtraTime) {
+                throw badRequest("extraTimeScore only applies when you predict a draw in regular time");
+            }
+            if (request.penaltyWinner() != null) {
+                throw badRequest("penaltyWinner only applies when your prediction ends level");
+            }
+            return;
+        }
+
+        // Empate no tempo normal: prorrogação é obrigatória e cumulativa.
+        if (etHome == null || etAway == null) {
+            throw badRequest("extra-time score is required when you predict a draw in a single-leg knockout");
+        }
+        if (etHome < request.homeScore() || etAway < request.awayScore()) {
+            throw badRequest("extra-time score cannot be lower than your regular-time score");
+        }
+
+        boolean predictedExtraTimeDraw = etHome.equals(etAway);
+        if (predictedExtraTimeDraw) {
+            if (request.penaltyWinner() == null) {
+                throw badRequest("penaltyWinner is required when your extra-time prediction is a draw");
+            }
+        } else if (request.penaltyWinner() != null) {
+            throw badRequest("penaltyWinner only applies when your extra-time prediction is a draw");
+        }
+    }
+
+    /**
+     * Regra de {@code penaltyWinner} para confrontos de ida-e-volta: aceito/obrigatório só na perna
+     * de volta empatada no agregado (gols reais das pernas anteriores + placar palpitado desta).
+     */
+    private void validateTwoLeggedPenaltyWinner(Match match, PlacePredictionRequest request) {
         List<Match> legs = matchRepository.findAllByTieId(match.getTieId());
         boolean eligible = penaltyHelper.isEligible(match, legs);
         int[] aggBefore = penaltyHelper.aggregateBefore(match, legs);
@@ -433,24 +545,20 @@ public class PredictionService {
                 (aggBefore[0] + request.homeScore()) == (aggBefore[1] + request.awayScore());
         if (request.penaltyWinner() != null) {
             if (!eligible) {
-                throw new BusinessException(
+                throw badRequest(
                         "penaltyWinner only applies to a single-leg knockout match or the second "
-                                + "leg of a two-legged tie",
-                        HttpStatus.BAD_REQUEST
-                );
+                                + "leg of a two-legged tie");
             }
             if (!predictedDraw) {
-                throw new BusinessException(
-                        "penaltyWinner only applies when your prediction ends the tie in a draw",
-                        HttpStatus.BAD_REQUEST
-                );
+                throw badRequest("penaltyWinner only applies when your prediction ends the tie in a draw");
             }
         } else if (eligible && predictedDraw) {
-            throw new BusinessException(
-                    "penaltyWinner is required when your prediction ends the tie in a draw",
-                    HttpStatus.BAD_REQUEST
-            );
+            throw badRequest("penaltyWinner is required when your prediction ends the tie in a draw");
         }
+    }
+
+    private BusinessException badRequest(String message) {
+        return new BusinessException(message, HttpStatus.BAD_REQUEST);
     }
 
     private Tournament loadTournament(UUID tournamentPublicId) {

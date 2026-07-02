@@ -363,12 +363,17 @@ export interface TournamentSettingsResponse {
   winPoints: number;
   drawPoints: number;
   lossPoints: number;
-  exactScorePoints: number;
-  winnerPoints: number;
-  wrongPoints: number;
+  exactScorePoints: number;                   // placar exato no tempo normal
+  winnerPoints: number;                       // só o vencedor/empate no tempo normal
+  wrongPoints: number;                        // erro no tempo normal
+  extraTimeExactScorePoints: number;          // placar exato da prorrogação (default 2)
+  extraTimeWinnerPoints: number;              // só o vencedor da prorrogação (default 1)
+  penaltyWinnerPoints: number;                // acertar quem passa nos pênaltis (default 2)
   tiebreakCriteria: TiebreakCriteria[];       // lista ordenada (ordem importa)
 }
 ```
+
+> Os três campos de mata-mata (`extraTimeExactScorePoints`, `extraTimeWinnerPoints`, `penaltyWinnerPoints`) **somam** ao componente do tempo normal — ver §19.
 
 ### `POST /api/tournaments` → 201
 
@@ -391,6 +396,13 @@ export interface TournamentSettingsPayload {
   exactScorePoints: number;                   // ≥ 0
   winnerPoints: number;                       // ≥ 0
   wrongPoints: number;                        // ≥ 0
+
+  // Mata-mata (opcionais, ≥ 0). Ausentes: no CREATE assumem os defaults 2/1/2;
+  // no UPDATE preservam o valor atual (clientes que não enviam não resetam).
+  extraTimeExactScorePoints?: number | null;  // default 2
+  extraTimeWinnerPoints?: number | null;      // default 1
+  penaltyWinnerPoints?: number | null;        // default 2
+
   tiebreakCriteria: TiebreakCriteria[];       // lista não vazia, sem duplicados
 }
 ```
@@ -807,6 +819,8 @@ export interface MatchResponse {
   scheduledAt: string | null;
   homeScore: number | null;
   awayScore: number | null;
+  homeExtraTimeScore: number | null;  // placar da prorrogação (KO jogo único); null se não houve. Cumulativo.
+  awayExtraTimeScore: number | null;
   homePenalties: number | null;   // só preenchido em disputa de pênaltis (KNOCKOUT)
   awayPenalties: number | null;
   penaltyShootoutEligible: boolean; // empate AQUI pode ir aos pênaltis no palpite (ver abaixo)
@@ -896,17 +910,28 @@ Lança ou edita o resultado. Após salvar, **recalcula pontos de todos os palpit
 
 ```ts
 export interface SetMatchResultRequest {
-  homeScore: number;          // ≥ 0
+  homeScore: number;          // ≥ 0  (tempo normal)
   awayScore: number;          // ≥ 0
+  homeExtraTimeScore?: number | null;  // prorrogação: opcional, ambos juntos, ≥ 0 e ≥ placar do tempo normal
+  awayExtraTimeScore?: number | null;
   homePenalties?: number | null;   // pênaltis: opcional, ambos juntos, ≥ 0 e diferentes
   awayPenalties?: number | null;
 }
 ```
 
+Fluxo em KO jogo único: `homeScore`/`awayScore` (90'). Se empatou → informa `homeExtraTimeScore`/`awayExtraTimeScore`. Se a prorrogação empatou → informa `homePenalties`/`awayPenalties`.
+
+**Prorrogação** (extra time — só mata-mata de **jogo único**, `KNOCKOUT` + `matchLegMode = SINGLE`):
+- **Cumulativa**: inclui os gols do tempo normal, então nunca pode ser menor que o placar do 90' por time (**409** `Extra-time score cannot be lower than the regular-time score`).
+- Vêm em par (**409** `Both extra-time scores must be provided together`).
+- Só em KO jogo único (**409** `Extra time only applies to single-leg KNOCKOUT matches`) e só quando o 90' empatou (**409** `Extra time only applies when regular time ended in a draw`).
+- Quando lançada, é o **placar decisivo**: reflete no agregado/`winner` do bracket e na geração da próxima rodada de KO.
+
 **Pênaltis** (desempate de mata-mata):
 - Só em phase `KNOCKOUT` (**409** `Penalties only apply to KNOCKOUT phases`).
 - Vêm em par (**409** `Both penalty scores must be provided together`) e não empatam (**409** `Penalty shootout cannot end in a draw`).
-- Só decidem o confronto quando o **agregado está empatado** (em TWO_LEGGED, lançar na perna decisiva). Sem regra de gol fora de casa. Refletem no `winner` do bracket e destravam a geração da próxima rodada de KO.
+- Em jogo único com prorrogação lançada, só são aceitos se a prorrogação empatou (**409** `Penalties only apply when extra time ended in a draw`).
+- Só decidem o confronto quando o **placar decisivo/agregado está empatado** (em jogo único = prorrogação se houve, senão 90'; em TWO_LEGGED, lançar na perna decisiva). Sem regra de gol fora de casa. Refletem no `winner` do bracket e destravam a geração da próxima rodada de KO.
 
 Validações:
 - **409** `Results can only be set while tournament is IN_PROGRESS`
@@ -998,9 +1023,12 @@ export interface TournamentRef {
 }
 
 export interface ScoringRef {
-  exactScorePoints: number;      // acertou o placar exato
-  winnerPoints: number;          // acertou só o vencedor/empate
-  wrongPoints: number;           // errou o desfecho
+  exactScorePoints: number;         // placar exato (tempo normal)
+  winnerPoints: number;             // só o vencedor/empate (tempo normal)
+  wrongPoints: number;              // erro (tempo normal)
+  extraTimeExactScorePoints: number; // placar exato da prorrogação
+  extraTimeWinnerPoints: number;     // só o vencedor da prorrogação
+  penaltyWinnerPoints: number;       // acertar quem passa nos pênaltis
 }
 
 export interface PhaseRef {
@@ -1021,6 +1049,8 @@ export interface MyPrediction {
   id: string;                    // UUID do palpite
   homeScore: number;
   awayScore: number;
+  homeExtraTimeScore: number | null; // placar palpitado da prorrogação (KO jogo único); null se não palpitou
+  awayExtraTimeScore: number | null;
   penaltyWinner: 'HOME' | 'AWAY' | null; // só em palpite de empate em KO
   points: number;                // pontos já apurados (0 enquanto a partida não fecha)
 }
@@ -1029,7 +1059,7 @@ export interface MyPrediction {
 **Notas para o front:**
 - O `match` é o **mesmo** `MatchResponse` dos outros endpoints — `round` (a "etapa/rodada"), `phaseId`, `groupId`/`groupName`, `homeTeam`/`awayTeam` (com cores, escudo, `countryCode` pra bandeira), `homeScore`/`awayScore`, `status`, pênaltis etc. vivem lá dentro. Os refs `tournament`/`phase`/`group` adicionam os **nomes/tipos** que o `MatchResponse` não carrega, pra você montar o cabeçalho do card ("Copa da Firma · Fase de Grupos · Grupo A · Rodada 2") sem chamadas extras.
 - `myPrediction` é o palpite **do próprio usuário** — nunca redigido (diferente da visibilidade dos palpites alheios na §17). `null` = ainda não palpitou; mostre um CTA "Palpitar". Para gravar/editar, use o `PUT` de palpite da §17 com o `tournament.id` e o `match.id`.
-- `tournament.scoring` traz a pontuação de palpite do torneio (`exactScorePoints`/`winnerPoints`/`wrongPoints`), para o chip de pontos por faixa ser colorido igual à aba de partidas do torneio — sem fallback.
+- `tournament.scoring` traz a pontuação de palpite do torneio — tempo normal (`exactScorePoints`/`winnerPoints`/`wrongPoints`) e mata-mata (`extraTimeExactScorePoints`/`extraTimeWinnerPoints`/`penaltyWinnerPoints`) — para o chip de pontos por faixa ser colorido igual à aba de partidas do torneio, sem fallback.
 - Para volumes maiores, use `from`/`to`/`limit` para paginar por rede em vez de baixar tudo e janelar no client.
 
 ### `GET /api/users/me/matches/pending-count` → 200 `PendingPredictionsCountResponse`
@@ -1203,6 +1233,8 @@ export interface PredictionResponse {
   userName: string;
   homeScore: number | null;   // redigido (null) enquanto não puder ser revelado
   awayScore: number | null;   // idem
+  homeExtraTimeScore: number | null;  // placar palpitado da prorrogação (KO jogo único); idem redação
+  awayExtraTimeScore: number | null;
   penaltyWinner: 'HOME' | 'AWAY' | null;  // quem o user acha que passa nos pênaltis; idem redação
   points: number | null;      // idem; recomputado quando o resultado do match muda
   createdAt: string;
@@ -1210,7 +1242,7 @@ export interface PredictionResponse {
 }
 ```
 
-> Os campos `homeScore`, `awayScore`, `penaltyWinner` e `points` podem vir `null` no listing público (`GET .../predictions`) quando os palpites ainda não foram liberados — ver regra abaixo. Em `PUT /predictions/me` (palpite do próprio user) e `GET /predictions/me` (meus palpites) eles **sempre** vêm preenchidos. `penaltyWinner` também é `null` quando o palpite não envolve pênaltis (palpite não-empate, ou partida que não é de mata-mata elegível).
+> Os campos `homeScore`, `awayScore`, `homeExtraTimeScore`, `awayExtraTimeScore`, `penaltyWinner` e `points` podem vir `null` no listing público (`GET .../predictions`) quando os palpites ainda não foram liberados — ver regra abaixo. Em `PUT /predictions/me` (palpite do próprio user) e `GET /predictions/me` (meus palpites) eles **sempre** vêm preenchidos. `homeExtraTimeScore`/`awayExtraTimeScore`/`penaltyWinner` também são `null` quando o palpite não envolve prorrogação/pênaltis (palpite não-empate, ou partida que não é de mata-mata elegível).
 
 ### `PUT /api/tournaments/{tid}/matches/{mid}/predictions/me` → 200
 
@@ -1218,18 +1250,45 @@ export interface PredictionResponse {
 
 ```ts
 export interface PlacePredictionRequest {
-  homeScore: number;          // ≥ 0
+  homeScore: number;          // ≥ 0  (tempo normal)
   awayScore: number;          // ≥ 0
-  penaltyWinner?: 'HOME' | 'AWAY';  // só em mata-mata elegível + palpite de empate (ver abaixo)
+  homeExtraTimeScore?: number | null; // prorrogação, ≥ 0 e ≥ placar do 90' (só KO jogo único)
+  awayExtraTimeScore?: number | null;
+  penaltyWinner?: 'HOME' | 'AWAY';    // quem passa nos pênaltis (ver cascata abaixo)
 }
 ```
 
-**`penaltyWinner` — quem passa nos pênaltis** (lado relativo ao jogo palpitado, igual a `homeScore`/`awayScore`):
-- Só se aplica a confronto elegível (`penaltyShootoutEligible = true` no `MatchResponse`): **jogo único de mata-mata**, ou a **perna de volta** de um `TWO_LEGGED`. Na ida de um ida-e-volta, não se envia.
-- O gatilho é o **empate no agregado** = `aggregateBeforeHome + homeScore === aggregateBeforeAway + awayScore`. Em jogo único o agregado anterior é `0/0`, então é o empate do próprio placar.
-- **Obrigatório** quando o palpite leva o confronto a empate no agregado (um mata-mata não pode terminar empatado — tem que dizer quem passa). Ausente nesse caso → **400** `penaltyWinner is required when your prediction ends the tie in a draw`.
-- Enviar `penaltyWinner` num jogo **não elegível** → **400** `penaltyWinner only applies to a single-leg knockout match or the second leg of a two-legged tie`.
-- Enviar `penaltyWinner` quando o palpite **não** leva a empate no agregado → **400** `penaltyWinner only applies when your prediction ends the tie in a draw`.
+#### Cascata de palpite em mata-mata de **jogo único** (`KNOCKOUT` + `matchLegMode = SINGLE`)
+
+Detecte "jogo único de KO" pelo `phase.phaseType`/`phase.matchLegMode` (o feed pessoal §14.1 traz esses campos no `PhaseRef`). A cascata é validada no backend (**400** se violada), mas o front deve conduzir o formulário:
+
+```
+1. homeScore / awayScore (tempo normal).
+2. Empate no 90'? (homeScore === awayScore)
+   ├─ NÃO → sem prorrogação/pênaltis. Enviar extraTime/penaltyWinner = null/ausente.
+   └─ SIM → prorrogação OBRIGATÓRIA. Placar mínimo de cada time = placar do 90' (cumulativo).
+3. Prorrogação empatada? (homeExtraTimeScore === awayExtraTimeScore)
+   ├─ NÃO → sem pênaltis. penaltyWinner = null/ausente.
+   └─ SIM → penaltyWinner OBRIGATÓRIO (HOME | AWAY).
+```
+
+Erros (**400**):
+- `extra-time score is required when you predict a draw in a single-leg knockout` — empatou o 90' e não mandou a prorrogação.
+- `extra-time score cannot be lower than your regular-time score` — prorrogação menor que o 90'.
+- `penaltyWinner is required when your extra-time prediction is a draw` — prorrogação empatada, sem `penaltyWinner`.
+- `penaltyWinner only applies when your extra-time prediction is a draw` — mandou `penaltyWinner` com prorrogação decidida.
+- `extraTimeScore only applies when you predict a draw in regular time` — mandou prorrogação sem empatar o 90'.
+- `penaltyWinner only applies when your prediction ends level` — mandou `penaltyWinner` sem empatar o 90'.
+- `extraTimeScore only applies to a single-leg knockout match` — mandou prorrogação fora de KO jogo único.
+
+#### `penaltyWinner` em ida-e-volta (`TWO_LEGGED`)
+
+Aqui **não há prorrogação**. `penaltyWinner` (lado relativo ao jogo palpitado) segue a regra do agregado:
+- Só na **perna de volta** elegível (`penaltyShootoutEligible = true` no `MatchResponse`). Na ida, não se envia.
+- Gatilho = empate no agregado = `aggregateBeforeHome + homeScore === aggregateBeforeAway + awayScore`.
+- **Obrigatório** nesse empate: ausente → **400** `penaltyWinner is required when your prediction ends the tie in a draw`.
+- Fora de confronto elegível → **400** `penaltyWinner only applies to a single-leg knockout match or the second leg of a two-legged tie`.
+- Sem empate no agregado → **400** `penaltyWinner only applies when your prediction ends the tie in a draw`.
 
 **Janela de palpite** (depende de a partida ter ou não horário):
 - **Com `scheduledAt`**: pode palpitar até o horário marcado. Quando `now >= scheduledAt` → **409** `Predictions are locked for this match`.
@@ -1271,14 +1330,16 @@ Distribuição agregada dos palpites do match (mandante / empate / visitante), *
 ```ts
 export interface PredictionStatsResponse {
   totalVotes: number;
-  homeWin: number;      // palpites com homeScore > awayScore
-  draw: number;         // homeScore == awayScore
-  awayWin: number;      // homeScore < awayScore
+  homeWin: number;      // palpites cujo desfecho é vitória do mandante
+  draw: number;         // empate
+  awayWin: number;      // vitória do visitante
   homeWinPct: number;   // 0–100, arredondado no servidor (os três somam 100)
   drawPct: number;
   awayWinPct: number;
 }
 ```
+
+> **Desfecho considera a prorrogação.** Para cada palpite, o desfecho (mandante/empate/visitante) usa o **placar da prorrogação** (`homeExtraTimeScore`/`awayExtraTimeScore`) quando o palpiteiro informou; senão o placar do tempo normal. Ex.: palpite 1×1 no tempo normal e 2×1 na prorrogação conta como **vitória do mandante**, não empate. Pênaltis **não** entram nessa distribuição — um palpite que vai a pênaltis (prorrogação empatada) conta como **empate** (a galera acha que "vai pra decisão").
 
 - **Nunca falha por janela de tempo** — pode ser chamado a qualquer momento (antes ou depois do jogo).
 - Percentuais arredondados no servidor pelo método do maior resto (somam exatamente 100). `totalVotes === 0` → todos os pct = 0.
@@ -1371,37 +1432,48 @@ Exemplos:
 
 ## 19. Sistema de pontuação dos palpites
 
-Vinda do `TournamentSettings` do torneio:
+Todos os valores vêm do `TournamentSettings`. A pontuação de um palpite é a **soma** de até três componentes independentes (tempo normal + prorrogação + pênaltis). Match `CANCELLED` zera os pontos dos palpites associados; match `SCHEDULED` mantém `points = 0` (ainda não avaliado).
 
-- **Placar exato** (`exactScorePoints`, default 5): `predictionHome == actualHome && predictionAway == actualAway`.
-- **Acerto de vencedor / empate** (`winnerPoints`, default 2): erra o placar mas acerta quem ganhou (ou que empatou). Comparação via `Math.sign(home - away)`.
-- **Erro completo** (`wrongPoints`, default 0): desfecho diferente.
+### Componente 1 — Tempo normal (sempre conta)
 
-Match `CANCELLED` zera os pontos dos palpites associados. Match `SCHEDULED` mantém `points = 0` (não foi avaliado ainda).
+Compara o palpite do 90' (`homeScore`/`awayScore`) com o placar real do 90':
 
-### Pontuação quando o confronto é decidido nos pênaltis
+- **Placar exato** (`exactScorePoints`, default 5): `predictionHome === actualHome && predictionAway === actualAway`.
+- **Vencedor / empate** (`winnerPoints`, default 2): errou o placar mas acertou o desfecho. Comparação via `Math.sign(home - away)`.
+- **Erro** (`wrongPoints`, default 0): desfecho diferente.
 
-Quando a partida (jogo único de mata-mata) **ou o agregado** (ida-e-volta) termina empatado e é resolvido nos pênaltis, e o palpiteiro informou `penaltyWinner`, a pontuação combina **duas dimensões** — acertar o **placar exato** do tempo normal e acertar **quem se classificou**:
+### Componente 2 — Prorrogação (só quando a partida foi de fato à prorrogação)
 
-| Placar exato? | Acertou quem passou? | Pontuação |
-| ------------- | -------------------- | --------- |
-| ✅ | ✅ | `exactScorePoints` |
-| ❌ | ✅ | `winnerPoints` |
-| ✅ | ❌ | `winnerPoints` |
-| ❌ | ❌ | `wrongPoints` |
+Só em mata-mata de jogo único que teve prorrogação (o `MatchResponse` traz `homeExtraTimeScore`/`awayExtraTimeScore` preenchidos) **e** o palpiteiro informou o placar da prorrogação. Compara o palpite de ET com o placar real de ET:
 
-Ou seja: **2 acertos → placar exato**, **1 acerto → vencedor**, **0 → erro**. O caso "placar exato porém errou quem passou" cai em `winnerPoints` (acertou o placar do tempo normal, mas o outro time avançou).
+- **Placar exato da prorrogação** (`extraTimeExactScorePoints`, default 2).
+- **Só o vencedor da prorrogação** (`extraTimeWinnerPoints`, default 1): errou o placar de ET, acertou o desfecho.
+- Errou o desfecho da prorrogação → `0` (não há "erro" configurável aqui).
 
-Exemplo (jogo único, palpite `2x2` + visitante passa):
-- Deu `2x2` e o **visitante** passou → `exactScorePoints`.
-- Empate **≠ 2x2** e o **visitante** passou → `winnerPoints`.
-- Empate **≠ 2x2** e o **mandante** passou → `wrongPoints`.
-- Deu `2x2` mas o **mandante** passou → `winnerPoints` (acertou o placar, errou quem passou).
+### Componente 3 — Pênaltis (só quando o confronto foi decidido nos pênaltis)
+
+Empate no placar decisivo (prorrogação se houve, senão 90' em jogo único; agregado em ida-e-volta) resolvido nos pênaltis, e o palpiteiro informou `penaltyWinner`:
+
+- **Acertou quem passa** (`penaltyWinnerPoints`, default 2).
+- Errou → `0`.
+
+O "quem passou" real é o time com mais pênaltis (jogo único) ou o vencedor do agregado (ida-e-volta, avaliado via `TieAggregateCalculator`).
+
+### Os três somam
+
+Exemplo (KO jogo único que foi a pênaltis): palpite `2x2` no 90' + `3x3` na prorrogação + mandante passa nos pênaltis, e o resultado real bateu tudo:
+
+```
+exactScorePoints (90' exato 2x2)  +  extraTimeExactScorePoints (ET exato 3x3)  +  penaltyWinnerPoints (quem passou)
+```
+
+Com os defaults de exemplo `2 / 2 / 2` → **6 pontos**.
+
+> ⚠️ **Mudou em relação ao comportamento anterior:** os pênaltis eram *combinados* no mesmo balde do tempo normal (2 acertos → exato, 1 → vencedor). Agora são um componente **aditivo** com pontuação própria (`penaltyWinnerPoints`), somado aos demais. Pontos de partidas já lançadas só refletem o novo modelo após um novo `setResult` ou via `POST /predictions/recalculate` (§17).
 
 Detalhes:
-- Só vale quando o confronto **efetivamente foi aos pênaltis** (empate no tempo normal/agregado + pênaltis lançados pelo owner). Se foi decidido no tempo normal/agregado, ou os pênaltis ainda não foram lançados, vale a **pontuação normal** acima (placar exato → vencedor → erro).
-- Em ida-e-volta, o `penaltyWinner` vai no palpite da **volta** e é avaliado contra o **vencedor do agregado** (mesmo cálculo do bracket/geração — `TieAggregateCalculator`). A **ida** pontua normalmente pelo placar dela.
-- O "quem passou" real é o time com mais pênaltis (jogo único) ou o vencedor do agregado (ida-e-volta).
+- Prorrogação e pênaltis só contam quando o confronto **efetivamente** passou por eles. Decidido no 90' → só o componente 1. Foi à prorrogação → componentes 1 + 2 (+ 3 se a ET empatou e foi a pênaltis).
+- Em ida-e-volta **não há prorrogação**; o `penaltyWinner` vai no palpite da **volta** e é avaliado contra o vencedor do agregado. Cada perna pontua o componente 1 pelo placar dela.
 
 ---
 

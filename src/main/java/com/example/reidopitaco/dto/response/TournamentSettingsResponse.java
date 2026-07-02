@@ -11,6 +11,9 @@ public record TournamentSettingsResponse(
         int exactScorePoints,
         int winnerPoints,
         int wrongPoints,
+        int extraTimeExactScorePoints,
+        int extraTimeWinnerPoints,
+        int penaltyWinnerPoints,
         List<TiebreakCriteria> tiebreakCriteria
 ) {
 }
