@@ -1430,6 +1430,151 @@ Exemplos:
 
 ---
 
+## 18.1 Retrospecto / análise da partida
+
+Read model **agregado** que alimenta a aba **"Retrospecto"** no detalhe da partida: contexto na competição, confronto direto, forma recente e desempenho dos palpiteiros. Um único objeto (sem paginação) — pensado para carregamento **sob demanda** (o front chama só quando abre a aba). Todos os números são calculados no backend; o front só apresenta.
+
+### `MatchAnalysisResponse`
+
+```ts
+export interface MatchAnalysisResponse {
+  matchId: string;
+  phaseType: 'ROUND_ROBIN' | 'KNOCKOUT' | 'GROUPS';   // tipo da fase DESTA partida
+  home: TeamFormSummary;      // mandante DESTA partida
+  away: TeamFormSummary;      // visitante DESTA partida
+  headToHead: HeadToHead;
+  expectedGoals: ExpectedGoals | null;  // projeção pela forma; null se algum time sem jogos
+  recentWindow: number;       // janela de "últimos jogos" (10)
+  headToHeadWindow: number;   // janela de confrontos diretos (2)
+}
+
+export interface ExpectedGoals {   // projeção pela forma (ataque × defesa), NÃO é xG de finalização
+  home: number;               // gols esperados do mandante (1 casa decimal)
+  away: number;
+}
+
+export interface TeamFormSummary {
+  team: TeamRef;                        // mesmo TeamRef do MatchResponse (cores/countryCode)
+  standing: TeamStandingContext | null; // null quando o contexto seria NONE
+  recentMatches: TeamFormMatch[];       // mais recente → mais antigo, até recentWindow
+  stats: TeamFormStats;
+  predictors: TeamPredictorStats;       // desempenho dos palpiteiros com este time
+  restDays: number | null;              // dias do último jogo até esta partida; null se indeterminado
+}
+
+export interface TeamStandingContext {
+  kind: 'ROUND_ROBIN' | 'GROUP' | 'PREVIOUS_PHASE';
+  position: number;         // 1-indexed
+  totalTeams: number;       // total na tabela/grupo referenciado (para "3º de 8")
+  points: number | null;
+  played: number | null;
+  groupName: string | null; // preenchido só quando kind === 'GROUP' (ou PREVIOUS_PHASE vindo de grupos)
+  phaseId: string;          // fase a que a posição se refere (a atual, ou a anterior no KO)
+  phaseName: string;
+}
+
+export interface TeamFormMatch {
+  matchId: string;
+  phaseId: string;
+  phaseName: string;
+  round: number;
+  scheduledAt: string | null;
+  opponent: TeamRef;
+  playedHome: boolean;          // o dono do card jogou como mandante?
+  goalsFor: number;             // placar DECISIVO (prorrogação se houve, senão 90')
+  goalsAgainst: number;
+  outcome: 'W' | 'D' | 'L';     // pela ótica do dono, pelo placar decisivo
+  hadExtraTime: boolean;
+  penaltyFor: number | null;    // pênaltis do dono SE decidido nos pênaltis; senão null
+  penaltyAgainst: number | null;
+  advanced: boolean | null;     // avançou nos pênaltis? null quando não houve pênaltis
+}
+
+export interface TeamFormStats {
+  played: number;               // jogos na janela (pode ser < recentWindow)
+  wins: number; draws: number; losses: number;
+  goalsFor: number; goalsAgainst: number; goalDifference: number;
+  cleanSheets: number;          // jogos sem sofrer gol
+  failedToScore: number;        // jogos sem marcar
+  overTwoFive: number;          // jogos com 3+ gols no total
+  bothTeamsScored: number;      // jogos em que os dois marcaram (BTTS)
+  points: number;               // aproveitamento 3/1/0 (NÃO usa a pontuação do torneio)
+  performancePct: number | null;// round(points / (played*3) * 100); null se played=0
+  streak: FormStreak | null;    // sequência atual; null se played=0
+  homeRecord: VenueRecord | null; // recorte como mandante; null se não jogou em casa na janela
+  awayRecord: VenueRecord | null; // idem como visitante
+}
+
+export interface TeamPredictorStats {
+  ratedMatches: number;             // jogos COMPLETED do time no torneio com ≥1 pitaco
+  totalPredictions: number;
+  exactScoreRate: number | null;    // % de pitacos com placar exato (0-100); null se 0 pitacos
+  correctOutcomeRate: number | null;// % de pitacos que acertaram o desfecho; null se 0 pitacos
+  averagePoints: number | null;     // média de pontos por pitaco; null se 0 pitacos
+  upsetRate: number | null;         // % de jogos em que a maioria errou o desfecho; null se 0 jogos
+}
+
+export interface FormStreak {
+  type: 'WIN' | 'LOSS' | 'DRAW' | 'UNBEATEN' | 'WINLESS';
+  count: number;                    // >= 1
+}
+
+export interface VenueRecord {
+  played: number; wins: number; draws: number; losses: number;
+  goalsFor: number; goalsAgainst: number;
+}
+
+export interface HeadToHead {
+  totalMeetings: number;        // confrontos anteriores entre os dois NO torneio (0 se nunca)
+  homeTeamWins: number;         // orientado ao mandante DESTA partida...
+  draws: number;
+  awayTeamWins: number;         // ...independente de quem foi mandante em cada confronto
+  homeTeamGoals: number;
+  awayTeamGoals: number;
+  averageGoals: number | null;  // (homeTeamGoals + awayTeamGoals) / totalMeetings; null se 0
+  recentMeetings: HeadToHeadMatch[]; // mais recente → antigo, até headToHeadWindow
+}
+
+export interface HeadToHeadMatch {
+  matchId: string;
+  phaseId: string;
+  phaseName: string;
+  round: number;
+  scheduledAt: string | null;
+  homeTeam: TeamRef;            // times como jogaram NAQUELE confronto (mando pode estar invertido)
+  awayTeam: TeamRef;
+  homeGoals: number;            // placar decisivo daquele confronto
+  awayGoals: number;
+  hadExtraTime: boolean;
+  penaltyHomeGoals: number | null;
+  penaltyAwayGoals: number | null;
+}
+```
+
+> `TeamRef` é exatamente o de `MatchResponse` (§14) — com `primaryColor`/`secondaryColor`/`teamType`/`countryCode`.
+
+### `GET /api/tournaments/{tournamentId}/matches/{matchId}/analysis` → 200 `MatchAnalysisResponse`
+
+- Path **sem `phaseId`** (a partida resolve a fase internamente), igual às rotas de palpite (§17).
+- Acesso: mesmo controle de visibilidade das demais rotas do torneio (owner, member `ACTIVE`, ou `PUBLIC` não-`DRAFT`); senão **404** `Tournament not found`. Não expõe pitacos individuais de ninguém.
+- **404** `Match not found` se a partida não existe **ou** não pertence ao torneio.
+- Sem paginação — um objeto agregado.
+
+### Regras de cálculo
+
+- **Escopo**: tudo (forma, confronto direto, palpiteiros) considera **somente partidas deste torneio**, atravessando todas as fases, apenas `COMPLETED`, **exceto a própria partida analisada**. Janelas fixas: `recentWindow = 10`, `headToHeadWindow = 2` (ecoadas no response).
+- **Placar decisivo**: prorrogação se lançada (cumulativa, já inclui os 90'), senão o tempo normal. Pênaltis **não** entram nos gols — vão em `penaltyFor`/`penaltyAgainst` e `penaltyHomeGoals`/`penaltyAwayGoals`. Empate que foi a pênaltis conta como empate (`D`); quem passou vem em `advanced`.
+- **Ordenação de "últimos jogos"**: `COALESCE(scheduledAt, createdAt)` desc, depois `createdAt`/`round` desc. Ida-e-volta aparece como **dois jogos** na forma (não agregados).
+- **`standing`** (contexto posicional): `ROUND_ROBIN` → posição na tabela da fase atual; `GROUPS` → posição dentro do grupo na fase atual (`groupName` preenchido); `KNOCKOUT` vindo de liga/grupos → posição **final** na fase anterior (`kind = PREVIOUS_PHASE`, `phaseId`/`phaseName` = fase anterior); mata-mata vindo de mata-mata (ou sem fase anterior) → `standing: null`. Usa a mesma tabela/ordenação do `/standings` (§16).
+- **`stats`**: aproveitamento **3/1/0 fixo** (não usa `winPoints`/`drawPoints` do torneio). `streak` do jogo mais recente para trás — pura → `WIN`/`LOSS`/`DRAW`; mista sem derrota → `UNBEATEN`; mista sem vitória → `WINLESS`. `homeRecord.played + awayRecord.played === stats.played`.
+- **`predictors`** ("como a galera se sai"): sobre **todos** os jogos `COMPLETED` do time no torneio (não só a janela) com ≥1 pitaco. `exactScoreRate` = placar exato do **tempo normal**; `correctOutcomeRate` = acerto de desfecho (ambos os lados pelo placar decisivo/prorrogação); `averagePoints` usa `points` já gravado; `upsetRate` = % de jogos em que a **maioria** errou o desfecho. Taxas em escala **0–100**; `null` quando não há base.
+- **`restDays`**: dias inteiros do jogo mais recente **com horário** (na janela) até o `scheduledAt` desta partida (ou "agora" se a partida não tem horário). Negativo/sem base → `null`.
+- **`expectedGoals`**: `home = (homeGF + awayGA)/2`, `away = (awayGF + homeGA)/2` (médias da janela), 1 casa decimal. `null` se algum time tem `played = 0`. **Não** é xG de finalização — é projeção pela forma.
+
+Percentuais em escala **0–100** e médias como decimal — o front formata (arredonda taxas para inteiro, gols para 1 casa).
+
+---
+
 ## 19. Sistema de pontuação dos palpites
 
 Todos os valores vêm do `TournamentSettings`. A pontuação de um palpite é a **soma** de até três componentes independentes (tempo normal + prorrogação + pênaltis). Match `CANCELLED` zera os pontos dos palpites associados; match `SCHEDULED` mantém `points = 0` (ainda não avaliado).
