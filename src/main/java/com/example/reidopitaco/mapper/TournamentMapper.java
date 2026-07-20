@@ -57,6 +57,14 @@ public class TournamentMapper {
                 settings.getExtraTimeExactScorePoints(),
                 settings.getExtraTimeWinnerPoints(),
                 settings.getPenaltyWinnerPoints(),
+                settings.getPickemQualifierPoints(),
+                settings.getPickemExactPositionPoints(),
+                settings.getPickemFirstPlacePoints(),
+                settings.getPickemKoMatchupExactPoints(),
+                settings.getPickemKoMatchupPartialPoints(),
+                settings.getPickemChampionPoints(),
+                settings.getPickemRunnerUpPoints(),
+                settings.getPickemThirdPlacePoints(),
                 criteria.stream()
                         .sorted(Comparator.comparingInt(TournamentTiebreakCriterion::getPosition))
                         .map(TournamentTiebreakCriterion::getCriteria)

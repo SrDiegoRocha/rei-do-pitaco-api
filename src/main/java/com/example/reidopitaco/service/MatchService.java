@@ -45,6 +45,7 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final MatchMapper mapper;
     private final PredictionService predictionService;
+    private final PhasePredictionScoringService phasePredictionScoringService;
     private final TournamentAccessGuard accessGuard;
     private final MatchNotificationService matchNotificationService;
 
@@ -56,6 +57,7 @@ public class MatchService {
             MatchRepository matchRepository,
             MatchMapper mapper,
             PredictionService predictionService,
+            PhasePredictionScoringService phasePredictionScoringService,
             TournamentAccessGuard accessGuard,
             MatchNotificationService matchNotificationService
     ) {
@@ -66,6 +68,7 @@ public class MatchService {
         this.matchRepository = matchRepository;
         this.mapper = mapper;
         this.predictionService = predictionService;
+        this.phasePredictionScoringService = phasePredictionScoringService;
         this.accessGuard = accessGuard;
         this.matchNotificationService = matchNotificationService;
     }
@@ -254,6 +257,8 @@ public class MatchService {
         match.setStatus(MatchStatus.COMPLETED);
         Match saved = matchRepository.saveAndFlush(match);
         predictionService.recalculatePointsFor(saved);
+        // Resultado novo/editado muda a classificação/bracket — repontua o Pick'em da fase.
+        phasePredictionScoringService.recalculateForPhase(saved.getPhase());
         matchNotificationService.notifyResultAvailable(saved);
         return mapper.toResponse(saved);
     }
@@ -277,7 +282,10 @@ public class MatchService {
         match.setHomePenalties(null);
         match.setAwayPenalties(null);
         predictionService.zeroPointsFor(match);
-        return mapper.toResponse(matchRepository.saveAndFlush(match));
+        Match saved = matchRepository.saveAndFlush(match);
+        // Cancelamento tira a partida da classificação/bracket — repontua o Pick'em da fase.
+        phasePredictionScoringService.recalculateForPhase(saved.getPhase());
+        return mapper.toResponse(saved);
     }
 
     @Transactional

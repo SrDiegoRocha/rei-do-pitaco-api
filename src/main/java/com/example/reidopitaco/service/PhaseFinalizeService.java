@@ -46,6 +46,7 @@ public class PhaseFinalizeService {
     private final MatchRepository matchRepository;
     private final TeamRepository teamRepository;
     private final StandingsService standingsService;
+    private final PhasePredictionScoringService phasePredictionScoringService;
 
     public PhaseFinalizeService(
             TournamentRepository tournamentRepository,
@@ -55,7 +56,8 @@ public class PhaseFinalizeService {
             TournamentZoneRepository zoneRepository,
             MatchRepository matchRepository,
             TeamRepository teamRepository,
-            StandingsService standingsService
+            StandingsService standingsService,
+            PhasePredictionScoringService phasePredictionScoringService
     ) {
         this.tournamentRepository = tournamentRepository;
         this.phaseRepository = phaseRepository;
@@ -65,6 +67,7 @@ public class PhaseFinalizeService {
         this.matchRepository = matchRepository;
         this.teamRepository = teamRepository;
         this.standingsService = standingsService;
+        this.phasePredictionScoringService = phasePredictionScoringService;
     }
 
     @Transactional
@@ -107,6 +110,9 @@ public class PhaseFinalizeService {
 
         phase.setFinalizedAt(Instant.now());
         phaseRepository.save(phase);
+
+        // Fase fechada: repontua o Pick'em com a classificação definitiva (deixa de ser provisório).
+        phasePredictionScoringService.recalculateForPhase(phase);
 
         return standings;
     }

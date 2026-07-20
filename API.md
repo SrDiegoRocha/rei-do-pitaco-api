@@ -369,11 +369,22 @@ export interface TournamentSettingsResponse {
   extraTimeExactScorePoints: number;          // placar exato da prorrogação (default 2)
   extraTimeWinnerPoints: number;              // só o vencedor da prorrogação (default 1)
   penaltyWinnerPoints: number;                // acertar quem passa nos pênaltis (default 2)
+
+  // Pick'em de fase (palpite de alto nível antes da fase começar — ver §20). Defaults 1.
+  pickemQualifierPoints: number;              // time previsto que termina classificado
+  pickemExactPositionPoints: number;          // time cravado na posição final exata
+  pickemFirstPlacePoints: number;             // acertar o 1º da tabela/grupo
+  pickemKoMatchupExactPoints: number;         // cravar os dois times de um confronto do mata-mata
+  pickemKoMatchupPartialPoints: number;       // acertar pelo menos 1 time do confronto
+  pickemChampionPoints: number;               // acertar o campeão
+  pickemRunnerUpPoints: number;               // acertar o vice
+  pickemThirdPlacePoints: number;             // acertar o 3º lugar
+
   tiebreakCriteria: TiebreakCriteria[];       // lista ordenada (ordem importa)
 }
 ```
 
-> Os três campos de mata-mata (`extraTimeExactScorePoints`, `extraTimeWinnerPoints`, `penaltyWinnerPoints`) **somam** ao componente do tempo normal — ver §19.
+> Os três campos de mata-mata (`extraTimeExactScorePoints`, `extraTimeWinnerPoints`, `penaltyWinnerPoints`) **somam** ao componente do tempo normal — ver §19. Os oito campos `pickem*` valem para o **Pick'em de fase** (§20), não para palpites de partida.
 
 ### `POST /api/tournaments` → 201
 
@@ -1420,6 +1431,17 @@ Sem paginação por enquanto — array completo. Acesso: aplica o controle de vi
 
 Sem nenhum filtro, agrega o torneio inteiro (comportamento anterior, inalterado). Com filtros, **todos os campos** do `RankingRowResponse` (`totalPoints`, `exactScoreHits`, `winnerHits`, `wrongs`, `totalPredictions`) passam a refletir apenas o recorte filtrado, e `position` é recalculado dentro do recorte. Filtros válidos sem partidas correspondentes retornam `[]`.
 
+#### Pick'em no ranking
+
+`totalPoints` inclui os pontos de **Pick'em de fase** (§20) somados aos pontos de palpite de partida — **sem breakdown** aqui (o detalhamento fica no perfil do palpiteiro, endpoint `summary`, em breve). Regras do recorte:
+
+- **Sem filtro**: soma os Pick'ems de todas as fases.
+- **Só `phaseId`**: soma apenas o Pick'em daquela fase.
+- **`groupId`/`round`/`matchType` presentes**: Pick'em **fica de fora** (ele é da fase inteira — não é recortável por grupo/rodada/partida); o recorte vira só de palpites de partida.
+- `memberStatus` também filtra os pontos de Pick'em (mesma semântica).
+
+Usuário que só tem Pick'em (nenhum palpite de partida) **aparece no ranking** com `totalPredictions = 0` e os contadores de acerto zerados. Os contadores (`exactScoreHits`/`winnerHits`/`wrongs`) seguem sendo **apenas de palpites de partida**.
+
 Exemplos:
 - `GET .../ranking?phaseId={fase}` — ranking só da fase de grupos.
 - `GET .../ranking?phaseId={fase}&groupId={grupo}` — ranking só do Grupo A.
@@ -1622,7 +1644,359 @@ Detalhes:
 
 ---
 
-## 20. Fluxos típicos pro frontend
+## 20. Pick'em de fase (`/api/tournaments/{tid}/phases/{pid}/pickem`)
+
+> Feature completa. O plano (modelo, regras, decisões de produto) está em `PLANO_PICKEM.md`.
+
+Palpite de **alto nível sobre a fase inteira**, feito **antes de a fase começar** (diferente do palpite de partida, que é jogo a jogo). O formato depende do `phaseType`:
+
+- **`ROUND_ROBIN` / `GROUPS`** — o usuário monta a classificação prevista de cada tabela/grupo: quais times ficam na zona de classificação e em quais posições (incl. o 1º).
+- **`KNOCKOUT`** — o usuário preenche quem passa em cada confronto, montando o caminho até a final (campeão, vice e 3º quando houver disputa).
+
+Regras principais (já definidas):
+
+- **Trava**: no início da 1ª partida da fase (`min(scheduledAt)`); se a fase não tem horários, trava quando o 1º resultado é lançado. Depois de travado, `PUT`/`DELETE` → 409.
+- **Um Pick'em por usuário/fase** (upsert, como o palpite de partida).
+- **Palpite parcial permitido** — slots não preenchidos simplesmente não pontuam.
+- **Sempre visível**: qualquer member ACTIVE vê os Pick'ems dos outros a qualquer momento (não há redação).
+- **Pontos somam no ranking geral** (§18) junto com os palpites de partida; a pontuação é **provisória** durante a fase (recalculada a cada resultado) e definitiva no fim.
+- A pontuação de cada componente é configurável pelo admin nos campos `pickem*` de `TournamentSettingsPayload`/`TournamentSettingsResponse` (§7), todos com default `1`:
+
+| Campo | Quando pontua |
+| ----- | ------------- |
+| `pickemQualifierPoints` | Time previsto na zona de classificação terminou classificado (independe da posição) |
+| `pickemExactPositionPoints` | Time cravado na posição final exata da tabela/grupo |
+| `pickemFirstPlacePoints` | Acertou o 1º da tabela/grupo |
+| `pickemKoMatchupExactPoints` | Cravou os dois times de um confronto do mata-mata |
+| `pickemKoMatchupPartialPoints` | Acertou pelo menos 1 time do confronto (**exclusivo** com o exato: paga um ou outro, nunca os dois) |
+| `pickemChampionPoints` | Acertou o campeão |
+| `pickemRunnerUpPoints` | Acertou o vice |
+| `pickemThirdPlacePoints` | Acertou o 3º lugar (só quando a fase tem disputa de 3º) |
+
+Componentes de tabela **somam** entre si (classificado + posição exata + 1º podem acumular no mesmo time). No mata-mata, confronto exato/parcial é exclusivo por confronto, mas soma com campeão/vice/3º.
+
+| Método | Path | Status | Descrição |
+| --- | --- | --- | --- |
+| GET | `.../pickem/template` | 200 | Molde + estado da janela (§20.1) |
+| PUT | `.../pickem/me` | 200 | Upsert do meu Pick'em (§20.2) |
+| GET | `.../pickem/me` | 200 | Meu Pick'em (§20.3) |
+| DELETE | `.../pickem/me` | 204 | Remove meu Pick'em (até travar) |
+| GET | `.../pickem` | 200 | Listagem paginada — sempre visível (§20.4) |
+| GET | `.../pickem/{userId}` | 200 | Pick'em de um participante (§20.5) |
+| GET | `.../pickem/stats` | 200 | Previsão da galera (§20.6) |
+| POST | `.../pickem/recalculate` | 200 | Owner: repontua a fase (§20.7) |
+| GET | `/api/tournaments/{tid}/participants/{userId}/summary` | 200 | Perfil do palpiteiro (§20.8) |
+| GET | `/api/users/me/pickems/pending` | 200 | Pendências do usuário — card "Palpitão aberto" (§20.9) |
+
+### 20.1 `GET .../pickem/template` → 200
+
+O "molde" que o front usa pra montar a tela do Pick'em: estado da janela, pontuação vigente e a estrutura a preencher. Acesso: mesma visibilidade do torneio (owner / member ACTIVE / PUBLIC não-DRAFT; senão **404**).
+
+```ts
+export type PickemState = 'NOT_READY' | 'OPEN' | 'LOCKED';
+
+export interface PhasePredictionTemplateResponse {
+  phaseId: string;
+  phaseName: string;
+  phaseType: TournamentPhaseType;      // 'ROUND_ROBIN' | 'GROUPS' | 'KNOCKOUT'
+  state: PickemState;
+  stateReason: string | null;          // só em NOT_READY (ver tabela abaixo)
+  lockAt: string | null;               // min(scheduledAt) das partidas da fase; null = trava pelo 1º resultado
+  scoring: PickemScoring;              // eco dos campos pickem* do TournamentSettings
+  table: TableTemplate | null;         // preenchido em ROUND_ROBIN/GROUPS (quando pronto)
+  bracket: BracketTemplate | null;     // preenchido em KNOCKOUT (quando pronto)
+}
+
+export interface PickemScoring {
+  qualifierPoints: number;
+  exactPositionPoints: number;
+  firstPlacePoints: number;
+  koMatchupExactPoints: number;
+  koMatchupPartialPoints: number;
+  championPoints: number;
+  runnerUpPoints: number;
+  thirdPlacePoints: number;
+}
+
+export interface TableTemplate {
+  qualifyingDepth: number;             // profundidade global da zona de classificação
+  groups: GroupBlock[];                // RR: 1 bloco com groupId/groupName null
+}
+
+export interface GroupBlock {
+  groupId: string | null;
+  groupName: string | null;
+  qualifyingDepth: number;             // min(global, nº de times do bloco) — slots a renderizar
+  teams: TeamRef[];                    // times disponíveis (ordem alfabética)
+}
+
+export interface BracketTemplate {
+  hasThirdPlace: boolean;
+  totalRounds: number;
+  rounds: TemplateRound[];             // rodada 1 com os confrontos reais; seguintes com slots vazios
+}
+
+export interface TemplateRound {
+  roundNumber: number;                 // 1-based (ordinal do bracket; ida+volta = 1 rodada)
+  name: string;                        // "Final", "Semifinals", "Quarterfinals", ...
+  slots: TemplateSlot[];
+}
+
+export interface TemplateSlot {
+  slotIndex: number;                   // 0-based dentro da rodada
+  homeTeam: TeamRef | null;            // null nas rodadas > 1 (o front preenche com os vencedores escolhidos)
+  awayTeam: TeamRef | null;
+}
+```
+
+**Estados** (`state`):
+
+| `state` | Significado |
+| --- | --- |
+| `OPEN` | Janela aberta — aceita `PUT`/`DELETE /me`. |
+| `LOCKED` | A fase começou (1ª partida iniciou, ou 1º resultado saiu quando não há horários). Palpites congelados. |
+| `NOT_READY` | Sem substrato ou torneio fora de IN_PROGRESS — `stateReason` explica. |
+
+**`stateReason`** (só em `NOT_READY`): `TOURNAMENT_NOT_IN_PROGRESS`, `NO_TEAMS`, `NO_GROUPS`, `TEAMS_NOT_ASSIGNED_TO_GROUPS`, `NO_QUALIFICATION_ZONES` (fase sem zona com `nextPhase` — sem faixa de classificação não há o que prever), `BRACKET_NOT_GENERATED` (KO sem a 1ª rodada gerada).
+
+**Como montar a árvore do KO no front:** a rodada 1 vem fixa (pares reais). O vencedor escolhido no slot `2j` alimenta o `homeTeam` e o do slot `2j+1` o `awayTeam` do slot `j` da rodada seguinte. Se `hasThirdPlace`, renderize um slot extra `THIRD_PLACE` na rodada final (slotIndex 0) com os perdedores previstos das semifinais.
+
+### 20.2 `PUT .../pickem/me` → 200 (upsert)
+
+Cria ou substitui **por inteiro** o Pick'em do usuário na fase. Envie `positions` em RR/GROUPS **ou** `ties` em KNOCKOUT (o outro campo omitido/vazio). Palpite **parcial é permitido** — slots omitidos não pontuam.
+
+```ts
+export interface PlacePhasePredictionRequest {
+  positions?: PositionPick[];          // RR/GROUPS
+  ties?: TiePick[];                    // KNOCKOUT
+}
+
+export interface PositionPick {
+  groupId?: string | null;             // obrigatório em GROUPS; proibido em RR
+  teamId: string;
+  position: number;                    // 1..qualifyingDepth do bloco
+}
+
+export interface TiePick {
+  roundNumber: number;                 // 1-based
+  slotIndex: number;                   // 0-based
+  matchType?: 'REGULAR' | 'THIRD_PLACE'; // default REGULAR
+  homeTeamId: string;
+  awayTeamId: string;
+  winnerTeamId: string;                // um dos dois acima
+}
+```
+
+Regras validadas no backend (violação → **400**, salvo indicação):
+
+- Tipo × payload: `positions` só em RR/GROUPS, `ties` só em KNOCKOUT.
+- **Tabela**: time pertence ao bloco; `position <= qualifyingDepth`; sem posição nem time repetido no mesmo bloco.
+- **Bracket**: todos os times pertencem ao bracket; `winnerTeamId` ∈ par; time não se repete na mesma rodada; **rodada 1 é fixa** (o par do slot deve bater com o confronto real); slots de rodadas seguintes devem ser formados pelos **vencedores que o próprio usuário escolheu** (checado quando o slot-filho foi enviado); `THIRD_PLACE` só se a fase tem 3º lugar, na rodada final, com os perdedores previstos das semifinais (e sem repetir os times da final).
+- Janela: torneio fora de IN_PROGRESS, fase travada ou não-pronta → **409** (mensagens abaixo).
+
+### 20.3 `GET .../pickem/me` → 200 | `DELETE .../pickem/me` → 204
+
+`GET /me` retorna o Pick'em do usuário autenticado (404 `Phase prediction not found` se não palpitou). `DELETE /me` remove (só com a janela aberta; travada → 409).
+
+```ts
+export interface PhasePredictionResponse {
+  id: string;
+  phaseId: string;
+  userId: string;
+  userName: string;
+  avatarUrl: string;
+  phaseType: TournamentPhaseType;
+  points: number;                      // total do Pick'em (provisório até a fase finalizar)
+  provisional: boolean;                // true enquanto a fase não foi finalizada
+  scoredAt: string | null;             // última repontuação; null = ainda não pontuado
+  positions: PositionRow[];            // vazio em KNOCKOUT
+  ties: TieRow[];                      // vazio em RR/GROUPS
+  terminals: TerminalOutcome | null;   // só KNOCKOUT (campeão/vice/3º); null sem base
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PositionRow {
+  groupId: string | null;
+  groupName: string | null;
+  team: TeamRef;
+  predictedPosition: number;
+  outcome: PositionOutcome | null;     // null enquanto não há resultados na fase
+}
+
+export interface PositionOutcome {
+  qualifiedHit: boolean | null;
+  exactPositionHit: boolean | null;
+  firstPlaceHit: boolean | null;
+  pointsAwarded: number | null;        // soma dos componentes deste slot
+}
+
+export interface TieRow {
+  roundNumber: number;
+  slotIndex: number;
+  matchType: 'REGULAR' | 'THIRD_PLACE';
+  homeTeam: TeamRef;
+  awayTeam: TeamRef;
+  winnerTeam: TeamRef;
+  outcome: TieOutcome | null;          // null enquanto o confronto real não existe
+}
+
+export interface TieOutcome {
+  matchup: 'EXACT' | 'PARTIAL' | 'MISS' | null; // null na rodada 1 (pares dados)
+  winnerAdvanced: boolean | null;
+  pointsAwarded: number | null;
+}
+
+export interface TerminalOutcome {
+  championHit: boolean | null;
+  runnerUpHit: boolean | null;
+  thirdPlaceHit: boolean | null;
+  pointsAwarded: number | null;
+}
+```
+
+> **Pontuação ativa.** `points` é recalculado automaticamente a cada resultado lançado/editado/cancelado e no finalize da fase (provisório → definitivo). Os campos `outcome`/`terminals` são calculados on-demand nas leituras: vêm `null` enquanto a fase não tem nenhum resultado; depois refletem o estado real atual. No mata-mata, o `matchup` da **rodada 1 é sempre `null`** (os pares são dados — não pontuam confronto); o matching das rodadas seguintes não depende da ordem dos slots (o backend maximiza os acertos parciais do palpiteiro).
+
+### 20.4 `GET .../pickem` → 200 (listagem)
+
+Todos os Pick'ems da fase, paginados (`Page<PhasePredictionResponse>`, formato padrão §4). **Sempre visíveis** — sem redação, mesmo antes da trava. Ordem fixa: `points` desc, nome asc (não aceita `sort`). Acesso: visibilidade do torneio (owner / member ACTIVE / PUBLIC não-DRAFT).
+
+### 20.5 `GET .../pickem/{userId}` → 200
+
+Pick'em de um participante específico (`PhasePredictionResponse`). **404** `Phase prediction not found` se ele não palpitou nesta fase.
+
+### 20.6 `GET .../pickem/stats` → 200
+
+"Previsão da galera" da fase — só contagens/percentuais, nunca palpites individuais. Pode ser exibido a qualquer momento.
+
+```ts
+export interface PhasePredictionStatsResponse {
+  phaseId: string;
+  phaseType: TournamentPhaseType;
+  totalPickems: number;                // nº de Pick'ems registrados na fase
+  table: TableStats | null;            // RR/GROUPS
+  bracket: BracketStats | null;        // KNOCKOUT
+}
+
+export interface TableStats {
+  groups: GroupStats[];                // RR: 1 bloco com groupId/groupName null
+}
+
+export interface GroupStats {
+  groupId: string | null;
+  groupName: string | null;
+  pickems: number;                     // Pick'ems com ≥1 palpite neste bloco (base do pct de qualifiers)
+  firstPlace: TeamShare[];             // distribuição de "quem fica em 1º" — pcts somam 100
+  qualifiers: TeamShare[];             // % dos Pick'ems que colocaram o time na zona — NÃO soma 100
+}
+
+export interface BracketStats {
+  champion: TeamShare[];               // distribuição de campeão previsto — pcts somam 100
+  runnerUp: TeamShare[];               // idem vice
+  thirdPlace: TeamShare[];             // idem 3º (vazio se a fase não tem 3º lugar)
+}
+
+export interface TeamShare {
+  team: TeamRef;
+  count: number;
+  pct: number;                         // 0–100 inteiro
+}
+```
+
+> Listas ordenadas por `count` desc. Nas distribuições de escolha única (`firstPlace`, `champion`, `runnerUp`, `thirdPlace`) os `pct` somam exatamente 100 (método do maior resto); em `qualifiers` cada `pct` é individual (um Pick'em escolhe vários times, a soma passa de 100).
+
+### 20.7 `POST .../pickem/recalculate` → 200 (owner)
+
+Repontua **todos** os Pick'ems da fase contra o estado real atual. Rede de segurança para quando o owner altera a pontuação `pickem*` com a fase já rolando (por padrão a mudança só vale do próximo resultado em diante). Idempotente. Não-owner → **403**.
+
+```ts
+export interface PickemRecalculationResponse {
+  pickemsRecalculated: number;
+}
+```
+
+### 20.8 Perfil do palpiteiro — `GET /api/tournaments/{tid}/participants/{userId}/summary` → 200
+
+Desempenho **explicado e separado** de um participante: quanto veio de palpites de partida, quanto veio de Pick'em (por fase e por componente). O ranking (§18) mostra só o total; o detalhamento mora aqui. Acesso: visibilidade do torneio. **404** `Participant not found in this tournament` se o usuário nunca foi membro.
+
+```ts
+export interface ParticipantSummaryResponse {
+  userId: string;
+  userName: string;
+  avatarUrl: string;
+  rankingPosition: number | null;     // null se não aparece no ranking (nenhum palpite/pick'em)
+  totalPoints: number;                // == ranking (partidas + pick'em)
+  matchPoints: number;                // só palpites de partida
+  pickemPoints: number;               // só Pick'em de fase
+  matchBreakdown: {
+    totalPredictions: number;
+    exactScoreHits: number;
+    winnerHits: number;
+    wrongs: number;
+  };
+  pickemByPhase: PickemPhaseBreakdown[];  // ordenado pela posição da fase
+}
+
+export interface PickemPhaseBreakdown {
+  phaseId: string;
+  phaseName: string;
+  phaseType: TournamentPhaseType;
+  provisional: boolean;               // true enquanto a fase não foi finalizada
+  points: number;                     // total do Pick'em nesta fase
+  components: {                       // decomposição (soma = points)
+    qualifier: number;                // times classificados acertados
+    exactPosition: number;            // posições exatas cravadas
+    firstPlace: number;               // 1º da tabela/grupo
+    koMatchupExact: number;           // confrontos cravados (A+B)
+    koMatchupPartial: number;         // confrontos com 1 time certo
+    champion: number;
+    runnerUp: number;
+    thirdPlace: number;
+  };
+}
+```
+
+### 20.9 Pendências do usuário — `GET /api/users/me/pickems/pending` → 200
+
+Fases em que o usuário autenticado **ainda pode e ainda não fez** o Pick'em — alimenta o card "Palpitão aberto" da home (mesmo espírito do `pending-count` de partidas, §14.1). Escopado ao próprio usuário; basta estar autenticado. Sem query params, sem paginação — array simples (universo naturalmente curto). Sem pendências → `[]`.
+
+```ts
+export interface PendingPickemResponse {
+  tournamentId: string;
+  tournamentName: string;
+  phaseId: string;
+  phaseName: string;
+  phaseType: TournamentPhaseType;      // 'ROUND_ROBIN' | 'GROUPS' | 'KNOCKOUT'
+  lockAt: string | null;               // min(scheduledAt) das partidas da fase (ISO);
+                                       // null = trava quando o 1º resultado for lançado
+}
+```
+
+Uma fase entra na lista quando **todas** as condições valem:
+
+1. Torneio **ativo** e **`IN_PROGRESS`**, com o usuário como member **`ACTIVE`** (inclui o owner, que é member auto).
+2. O Pick'em da fase está **`OPEN`** — exatamente a mesma regra do `template` (§20.1), mesma fonte de verdade no backend: substrato pronto **e** ainda não travou. Fases `NOT_READY` (ex.: KO sem a 1ª rodada gerada) e `LOCKED` ficam de fora.
+3. O usuário **ainda não tem** Pick'em naquela fase (quem já palpitou sai da lista).
+
+Ordenação por urgência: `lockAt` asc com **nulls por último**; empate → `tournamentName` asc (case-insensitive), depois posição da fase.
+
+### 20.10 Erros do Pick'em
+
+| Status | `message` | Quando |
+| --- | --- | --- |
+| 409 | `Phase pick'em is locked (the phase has started)` | `PUT`/`DELETE /me` após a trava |
+| 409 | `Phase pick'em is only accepted while tournament is IN_PROGRESS` | Torneio em DRAFT/OPEN/FINISHED |
+| 409 | `Phase pick'em is not available yet: <reason>` | Fase sem substrato (`stateReason` da §20.1) |
+| 403 | `You are not an active member of this tournament` | Requester não é member ACTIVE |
+| 403 | `Only the tournament owner can perform this action` | `POST /recalculate` por não-owner |
+| 404 | `Phase prediction not found` | `GET`/`DELETE /me` ou `GET /{userId}` sem palpite |
+| 404 | `Participant not found in this tournament` | `summary` de quem nunca foi membro |
+| 404 | `Tournament not found` / `Phase not found` | ids inválidos ou sem acesso |
+| 400 | mensagens da §20.2 | payload inválido |
+
+---
+
+## 21. Fluxos típicos pro frontend
 
 ### Cadastro e login
 
@@ -1679,7 +2053,7 @@ Quando todos os matches de uma phase estiverem resolvidos:
 
 ---
 
-## 21. Convenções e dicas
+## 22. Convenções e dicas
 
 - **IDs em path params são sempre o UUID público** (`publicId`), nunca o `id` interno (Long).
 - **Timestamps** sempre em UTC ISO 8601 com sufixo `Z`. Não há offset local.

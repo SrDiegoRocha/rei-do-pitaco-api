@@ -228,7 +228,20 @@ public class TournamentService {
                         payload.extraTimeWinnerPoints() != null ? payload.extraTimeWinnerPoints() : 1)
                 .penaltyWinnerPoints(
                         payload.penaltyWinnerPoints() != null ? payload.penaltyWinnerPoints() : 2)
+                // Pick'em de fase: ausentes assumem o default 1.
+                .pickemQualifierPoints(defaultOne(payload.pickemQualifierPoints()))
+                .pickemExactPositionPoints(defaultOne(payload.pickemExactPositionPoints()))
+                .pickemFirstPlacePoints(defaultOne(payload.pickemFirstPlacePoints()))
+                .pickemKoMatchupExactPoints(defaultOne(payload.pickemKoMatchupExactPoints()))
+                .pickemKoMatchupPartialPoints(defaultOne(payload.pickemKoMatchupPartialPoints()))
+                .pickemChampionPoints(defaultOne(payload.pickemChampionPoints()))
+                .pickemRunnerUpPoints(defaultOne(payload.pickemRunnerUpPoints()))
+                .pickemThirdPlacePoints(defaultOne(payload.pickemThirdPlacePoints()))
                 .build();
+    }
+
+    private int defaultOne(Integer value) {
+        return value != null ? value : 1;
     }
 
     private void updateSettings(Tournament tournament, TournamentSettingsPayload payload) {
@@ -248,6 +261,31 @@ public class TournamentService {
         }
         if (payload.penaltyWinnerPoints() != null) {
             settings.setPenaltyWinnerPoints(payload.penaltyWinnerPoints());
+        }
+        // Pick'em de fase: ausentes preservam o valor atual (mesma semântica dos campos acima).
+        if (payload.pickemQualifierPoints() != null) {
+            settings.setPickemQualifierPoints(payload.pickemQualifierPoints());
+        }
+        if (payload.pickemExactPositionPoints() != null) {
+            settings.setPickemExactPositionPoints(payload.pickemExactPositionPoints());
+        }
+        if (payload.pickemFirstPlacePoints() != null) {
+            settings.setPickemFirstPlacePoints(payload.pickemFirstPlacePoints());
+        }
+        if (payload.pickemKoMatchupExactPoints() != null) {
+            settings.setPickemKoMatchupExactPoints(payload.pickemKoMatchupExactPoints());
+        }
+        if (payload.pickemKoMatchupPartialPoints() != null) {
+            settings.setPickemKoMatchupPartialPoints(payload.pickemKoMatchupPartialPoints());
+        }
+        if (payload.pickemChampionPoints() != null) {
+            settings.setPickemChampionPoints(payload.pickemChampionPoints());
+        }
+        if (payload.pickemRunnerUpPoints() != null) {
+            settings.setPickemRunnerUpPoints(payload.pickemRunnerUpPoints());
+        }
+        if (payload.pickemThirdPlacePoints() != null) {
+            settings.setPickemThirdPlacePoints(payload.pickemThirdPlacePoints());
         }
     }
 

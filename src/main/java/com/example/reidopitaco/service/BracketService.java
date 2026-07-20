@@ -133,7 +133,8 @@ public class BracketService {
         );
     }
 
-    private String labelForRound(int expectedTies, int ordinal) {
+    /** Rótulo da rodada pelo nº esperado de confrontos. Reusado pelo template do Pick'em. */
+    static String labelForRound(int expectedTies, int ordinal) {
         return switch (expectedTies) {
             case 1 -> "Final";
             case 2 -> "Semifinals";

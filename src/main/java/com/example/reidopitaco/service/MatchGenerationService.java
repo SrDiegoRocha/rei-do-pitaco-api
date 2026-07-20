@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -254,12 +255,25 @@ public class MatchGenerationService {
             byTie.computeIfAbsent(m.getTieId(), k -> new ArrayList<>()).add(m);
         }
 
+        // Ordem canônica do chaveamento (a mesma do bracket read model): pernas ordenadas por
+        // round/criação e confrontos pela criação da 1ª perna. Iterar o HashMap direto deixava a
+        // ordem dos vencedores efetivamente aleatória — o emparelhamento da próxima rodada não
+        // seguia a árvore exibida no bracket. Com a ordem canônica, o vencedor do confronto 2j
+        // enfrenta o do 2j+1, como o usuário espera (e como o Pick'em de fase apresenta).
+        List<List<Match>> orderedTies = new ArrayList<>(byTie.values());
+        for (List<Match> legs : orderedTies) {
+            legs.sort(Comparator.comparingInt(Match::getRound)
+                    .thenComparing(Match::getCreatedAt));
+        }
+        orderedTies.sort(Comparator.comparing(legs -> legs.get(0).getCreatedAt()));
+
         List<Team> winners = new ArrayList<>();
-        for (Map.Entry<UUID, List<Match>> entry : byTie.entrySet()) {
-            Team winner = resolveTieWinner(entry.getValue());
+        for (List<Match> legs : orderedTies) {
+            Team winner = resolveTieWinner(legs);
             if (winner == null) {
                 throw new MatchGenerationException(
-                        "Tie " + entry.getKey() + " has no winner (draw on aggregate); resolve manually"
+                        "Tie " + legs.get(0).getTieId()
+                                + " has no winner (draw on aggregate); resolve manually"
                 );
             }
             winners.add(winner);
@@ -273,8 +287,8 @@ public class MatchGenerationService {
         Team finalLoserB = null;
         boolean isFinalRound = winners.size() == 2 && phase.isHasThirdPlace();
         if (isFinalRound) {
-            for (Map.Entry<UUID, List<Match>> entry : byTie.entrySet()) {
-                Team loser = resolveTieLoser(entry.getValue());
+            for (List<Match> legs : orderedTies) {
+                Team loser = resolveTieLoser(legs);
                 if (loser == null) continue;
                 if (finalLoserA == null) finalLoserA = loser;
                 else finalLoserB = loser;

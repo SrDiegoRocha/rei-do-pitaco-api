@@ -64,6 +64,33 @@ public class TournamentSettings {
     @Column(name = "penalty_winner_points", nullable = false)
     private int penaltyWinnerPoints;
 
+    // Pontuação do Pick'em de fase (palpite de alto nível antes da fase começar). Defaults 1.
+    // Tabela (ROUND_ROBIN/GROUPS):
+    @Column(name = "pickem_qualifier_points", nullable = false)
+    private int pickemQualifierPoints;
+
+    @Column(name = "pickem_exact_position_points", nullable = false)
+    private int pickemExactPositionPoints;
+
+    @Column(name = "pickem_first_place_points", nullable = false)
+    private int pickemFirstPlacePoints;
+
+    // Bracket (KNOCKOUT):
+    @Column(name = "pickem_ko_matchup_exact_points", nullable = false)
+    private int pickemKoMatchupExactPoints;
+
+    @Column(name = "pickem_ko_matchup_partial_points", nullable = false)
+    private int pickemKoMatchupPartialPoints;
+
+    @Column(name = "pickem_champion_points", nullable = false)
+    private int pickemChampionPoints;
+
+    @Column(name = "pickem_runner_up_points", nullable = false)
+    private int pickemRunnerUpPoints;
+
+    @Column(name = "pickem_third_place_points", nullable = false)
+    private int pickemThirdPlacePoints;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

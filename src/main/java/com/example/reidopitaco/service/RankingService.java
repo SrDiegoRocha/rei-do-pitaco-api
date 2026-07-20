@@ -11,6 +11,7 @@ import com.example.reidopitaco.exception.BusinessException;
 import com.example.reidopitaco.exception.PhaseGroupNotFoundException;
 import com.example.reidopitaco.exception.PhaseNotFoundException;
 import com.example.reidopitaco.repository.PhaseGroupRepository;
+import com.example.reidopitaco.repository.PhasePredictionRepository;
 import com.example.reidopitaco.repository.PredictionRepository;
 import com.example.reidopitaco.repository.TournamentPhaseRepository;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class RankingService {
 
     private final PredictionRepository predictionRepository;
+    private final PhasePredictionRepository phasePredictionRepository;
     private final TournamentPhaseRepository phaseRepository;
     private final PhaseGroupRepository groupRepository;
     private final TournamentAccessGuard accessGuard;
@@ -35,12 +37,14 @@ public class RankingService {
 
     public RankingService(
             PredictionRepository predictionRepository,
+            PhasePredictionRepository phasePredictionRepository,
             TournamentPhaseRepository phaseRepository,
             PhaseGroupRepository groupRepository,
             TournamentAccessGuard accessGuard,
             AvatarService avatarService
     ) {
         this.predictionRepository = predictionRepository;
+        this.phasePredictionRepository = phasePredictionRepository;
         this.phaseRepository = phaseRepository;
         this.groupRepository = groupRepository;
         this.accessGuard = accessGuard;
@@ -108,6 +112,21 @@ public class RankingService {
                 acc.winnerHits++;
             } else {
                 acc.wrongs++;
+            }
+        }
+
+        // Pontos de Pick'em de fase entram no total quando o recorte permite: sem filtro, ou
+        // filtro só por fase. Recortes por grupo/rodada/matchType são de partidas — o Pick'em
+        // (que é por fase inteira) fica de fora deles. Usuários que só têm Pick'em (sem palpite
+        // de partida) também entram no ranking.
+        boolean includePickem = groupId == null && round == null && matchType == null;
+        if (includePickem) {
+            for (Object[] row : phasePredictionRepository.sumPointsByUser(
+                    tournamentPublicId, phaseId, memberStatus)) {
+                User user = (User) row[0];
+                long pickemPoints = (Long) row[1];
+                Accumulator acc = table.computeIfAbsent(user.getId(), k -> new Accumulator(user));
+                acc.totalPoints += (int) pickemPoints;
             }
         }
 

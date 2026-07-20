@@ -14,6 +14,14 @@ public record TournamentSettingsResponse(
         int extraTimeExactScorePoints,
         int extraTimeWinnerPoints,
         int penaltyWinnerPoints,
+        int pickemQualifierPoints,
+        int pickemExactPositionPoints,
+        int pickemFirstPlacePoints,
+        int pickemKoMatchupExactPoints,
+        int pickemKoMatchupPartialPoints,
+        int pickemChampionPoints,
+        int pickemRunnerUpPoints,
+        int pickemThirdPlacePoints,
         List<TiebreakCriteria> tiebreakCriteria
 ) {
 }
