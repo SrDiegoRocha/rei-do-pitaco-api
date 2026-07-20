@@ -269,7 +269,9 @@ export interface ChangePasswordRequest {
 
 Todos os endpoints exigem auth. Há dois tipos de time:
 - **Times do usuário** — criados por ele, editáveis/deletáveis só por ele.
-- **Times do sistema** (`system: true`) — pré-cadastrados (ex.: as 48 seleções da Copa 2026), visíveis a **todos**, **não editáveis nem deletáveis**. O usuário pode usá-los nos torneios.
+- **Times do sistema** (`system: true`) — pré-cadastrados, visíveis a **todos**, **não editáveis nem deletáveis**. O usuário pode usá-los nos torneios. Dois grupos:
+  - **Seleções** (`teamType: 'NATIONAL_TEAM'`) — 80+ seleções (Copa 2026 e outras), imagem = bandeira via `countryCode`.
+  - **Clubes** (`teamType: 'CLUB'`) — 200+ clubes de 10 ligas nacionais (Brasileirão A/B, Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Primeira Liga, Eredivisie, Primera División ARG), com escudo em `badgeUrl` e liga em `leagueSlug`/`leagueName`.
 
 ### `TeamResponse`
 
@@ -277,13 +279,15 @@ Todos os endpoints exigem auth. Há dois tipos de time:
 export interface TeamResponse {
   id: string;                 // UUID público
   name: string;
-  shortName: string | null;   // 2–5 chars (nas seleções = sigla FIFA, ex. "BRA")
-  badgeUrl: string | null;    // escudo (times de usuário / clubes); null nas seleções do sistema
+  shortName: string | null;   // 2–5 chars (seleções = sigla FIFA "BRA"; clubes = sigla usual "FLA")
+  badgeUrl: string | null;    // escudo — URL absoluta pronta pro <img>; null nas seleções do sistema
   primaryColor: string;       // #RRGGBB
   secondaryColor: string;     // #RRGGBB
   system: boolean;            // true = time padrão do sistema (read-only)
   teamType: TeamType;         // 'CLUB' | 'NATIONAL_TEAM'
-  countryCode: string | null; // código flagicons (ex. "br", "gb-eng"); preenchido nas seleções
+  countryCode: string | null; // flagicons (ex. "br", "gb-eng"); seleções = país; clubes do sistema = país da liga
+  leagueSlug: string | null;  // só clubes do sistema (ex. "brasileirao-serie-a"); null nos demais
+  leagueName: string | null;  // nome de exibição da liga (ex. "Brasileirão Série A")
   createdAt: string;
   updatedAt: string;
 }
@@ -291,7 +295,7 @@ export interface TeamResponse {
 export type TeamType = 'CLUB' | 'NATIONAL_TEAM';
 ```
 
-> **Imagem do time**: para `teamType === 'NATIONAL_TEAM'` use `countryCode` com o flagicons (`https://flagicons.lipis.dev`), ex. `<span class="fi fi-br"></span>` ou `.../flags/4x3/br.svg`. Para os demais (clubes/times de usuário) use `badgeUrl`.
+> **Imagem do time**: para `teamType === 'NATIONAL_TEAM'` use `countryCode` com o flagicons (`https://flagicons.lipis.dev`), ex. `<span class="fi fi-br"></span>` ou `.../flags/4x3/br.svg`. Para os demais (clubes/times de usuário) use `badgeUrl` direto no `<img>` — nos clubes do sistema ele aponta para a própria API (`/logos/**`, rota **pública**, sem JWT, cache de 7 dias). Nos clubes do sistema o `countryCode` traz o país da liga (útil pra bandeirinha no cabeçalho do grupo de liga).
 
 ### `POST /api/teams` → 201
 
@@ -313,15 +317,19 @@ Times criados pelo usuário nascem com `system: false` e `teamType: 'CLUB'`.
 
 ### `GET /api/teams` → 200 `Page<TeamResponse>`
 
-Lista paginada. Aceita `page`, `size`, `sort` e dois filtros:
+Lista paginada. Aceita `page`, `size`, `sort` e três filtros:
 
 - `scope` (opcional): `mine` (padrão) = meus times; `system` = só os do sistema; `all` = meus + sistema.
 - `type` (opcional): `CLUB` ou `NATIONAL_TEAM`.
+- `league` (opcional): `leagueSlug` exato (ex. `brasileirao-serie-a`). Só clubes do sistema têm liga; combinar com `type=NATIONAL_TEAM` retorna vazio.
 
-Exemplos para os 3 grupos do front:
+Exemplos para os grupos do front:
 - Meus times: `GET /api/teams` (ou `?scope=mine`).
 - Seleções do sistema: `GET /api/teams?scope=system&type=NATIONAL_TEAM`.
-- Clubes do sistema: `GET /api/teams?scope=system&type=CLUB` (vazio por enquanto — só seleções foram cadastradas).
+- Clubes do sistema (todos): `GET /api/teams?scope=system&type=CLUB` (agrupe por `leagueName` no cliente).
+- Uma liga específica: `GET /api/teams?scope=system&type=CLUB&league=brasileirao-serie-a&size=50`.
+
+Ligas disponíveis (slug → nome): `brasileirao-serie-a` → Brasileirão Série A (20), `brasileirao-serie-b` → Brasileirão Série B (20), `premier-league` → Premier League (20), `la-liga` → La Liga (20), `serie-a` → Serie A (20), `bundesliga` → Bundesliga (18), `ligue-1` → Ligue 1 (18), `primeira-liga` → Primeira Liga (18), `eredivisie` → Eredivisie (18), `primera-division-arg` → Primera División (30).
 
 ### `GET /api/teams/{id}` → 200 `TeamResponse`
 
@@ -552,7 +560,9 @@ export interface TournamentTeamResponse {
   secondaryColor: string;
   system: boolean;            // true = time do sistema
   teamType: TeamType;         // 'CLUB' | 'NATIONAL_TEAM'
-  countryCode: string | null; // flagicons; preenchido nas seleções
+  countryCode: string | null; // flagicons; seleções = país, clubes do sistema = país da liga
+  leagueSlug: string | null;  // liga do clube do sistema; null nos demais
+  leagueName: string | null;
   addedAt: string;
 }
 ```

@@ -43,6 +43,7 @@ public class StandingsService {
     private final MatchRepository matchRepository;
     private final TournamentZoneRepository zoneRepository;
     private final TournamentAccessGuard accessGuard;
+    private final AssetUrlResolver assetUrlResolver;
 
     public StandingsService(
             TournamentPhaseRepository phaseRepository,
@@ -50,7 +51,8 @@ public class StandingsService {
             PhaseTeamRepository phaseTeamRepository,
             MatchRepository matchRepository,
             TournamentZoneRepository zoneRepository,
-            TournamentAccessGuard accessGuard
+            TournamentAccessGuard accessGuard,
+            AssetUrlResolver assetUrlResolver
     ) {
         this.phaseRepository = phaseRepository;
         this.groupRepository = groupRepository;
@@ -58,6 +60,7 @@ public class StandingsService {
         this.matchRepository = matchRepository;
         this.zoneRepository = zoneRepository;
         this.accessGuard = accessGuard;
+        this.assetUrlResolver = assetUrlResolver;
     }
 
     @Transactional(readOnly = true)
@@ -155,7 +158,7 @@ public class StandingsService {
                 a.team.getPublicId(),
                 a.team.getName(),
                 a.team.getShortName(),
-                a.team.getBadgeUrl(),
+                assetUrlResolver.resolve(a.team.getBadgeUrl()),
                 a.team.getTeamType(),
                 a.team.getCountryCode(),
                 a.played, a.wins, a.draws, a.losses,

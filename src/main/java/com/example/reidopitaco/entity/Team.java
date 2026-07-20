@@ -67,9 +67,17 @@ public class Team {
     @Column(name = "team_type", nullable = false, length = 20)
     private TeamType teamType;
 
-    // Código ISO/flagicons (ex.: "br", "gb-eng") para renderizar a bandeira no front; só em seleções.
+    // Código ISO/flagicons (ex.: "br", "gb-eng"). Seleções: bandeira do país; clubes do
+    // sistema: país da liga (bandeirinha ao lado do nome da liga no front).
     @Column(name = "country_code", length = 10)
     private String countryCode;
+
+    // Liga nacional — só em clubes do sistema (NULL em times de usuário e seleções).
+    @Column(name = "league_slug", length = 60)
+    private String leagueSlug;
+
+    @Column(name = "league_name", length = 80)
+    private String leagueName;
 
     @Column(nullable = false)
     private boolean active;

@@ -61,11 +61,12 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TeamResponse> list(UUID ownerPublicId, TeamScope scope, TeamType type, Pageable pageable) {
+    public Page<TeamResponse> list(UUID ownerPublicId, TeamScope scope, TeamType type, String league, Pageable pageable) {
         TeamScope effectiveScope = scope != null ? scope : TeamScope.MINE;
         boolean includeMine = effectiveScope == TeamScope.MINE || effectiveScope == TeamScope.ALL;
         boolean includeSystem = effectiveScope == TeamScope.SYSTEM || effectiveScope == TeamScope.ALL;
-        return teamRepository.search(includeMine, includeSystem, ownerPublicId, type, pageable)
+        String leagueSlug = normalize(league);
+        return teamRepository.search(includeMine, includeSystem, ownerPublicId, type, leagueSlug, pageable)
                 .map(teamMapper::toResponse);
     }
 

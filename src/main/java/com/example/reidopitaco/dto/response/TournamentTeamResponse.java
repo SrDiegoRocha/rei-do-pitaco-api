@@ -15,6 +15,8 @@ public record TournamentTeamResponse(
         boolean system,
         TeamType teamType,
         String countryCode,
+        String leagueSlug,
+        String leagueName,
         Instant addedAt
 ) {
 }

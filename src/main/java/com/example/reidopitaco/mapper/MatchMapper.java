@@ -4,6 +4,7 @@ import com.example.reidopitaco.dto.response.MatchResponse;
 import com.example.reidopitaco.entity.Match;
 import com.example.reidopitaco.entity.PhaseGroup;
 import com.example.reidopitaco.entity.Team;
+import com.example.reidopitaco.service.AssetUrlResolver;
 import com.example.reidopitaco.service.MatchLegModeResolver;
 import com.example.reidopitaco.service.MatchPenaltyHelper;
 import org.springframework.stereotype.Component;
@@ -13,10 +14,16 @@ public class MatchMapper {
 
     private final MatchPenaltyHelper penaltyHelper;
     private final MatchLegModeResolver legModeResolver;
+    private final AssetUrlResolver assetUrlResolver;
 
-    public MatchMapper(MatchPenaltyHelper penaltyHelper, MatchLegModeResolver legModeResolver) {
+    public MatchMapper(
+            MatchPenaltyHelper penaltyHelper,
+            MatchLegModeResolver legModeResolver,
+            AssetUrlResolver assetUrlResolver
+    ) {
         this.penaltyHelper = penaltyHelper;
         this.legModeResolver = legModeResolver;
+        this.assetUrlResolver = assetUrlResolver;
     }
 
     public MatchResponse toResponse(Match match) {
@@ -54,7 +61,7 @@ public class MatchMapper {
                 team.getPublicId(),
                 team.getName(),
                 team.getShortName(),
-                team.getBadgeUrl(),
+                assetUrlResolver.resolve(team.getBadgeUrl()),
                 team.getPrimaryColor(),
                 team.getSecondaryColor(),
                 team.getTeamType(),

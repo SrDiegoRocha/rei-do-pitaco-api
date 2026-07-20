@@ -1,0 +1,2026 @@
+{
+  "generatedAt": "2026-07-20T20:25:09.646Z",
+  "source": "https://football-logos.cc",
+  "teams": [
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "athletico-paranaense",
+      "teamName": "Athletico Paranaense",
+      "file": "logos/brazil/athletico-paranaense.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/athletico-paranaense.15469cc7.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "atletico-mineiro",
+      "teamName": "Atlético Mineiro",
+      "file": "logos/brazil/atletico-mineiro.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/atletico-mineiro.c5c81922.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "bahia",
+      "teamName": "Bahia",
+      "file": "logos/brazil/bahia.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/bahia.ac6d69f5.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "clube-do-remo",
+      "teamName": "Clube do Remo",
+      "file": "logos/brazil/clube-do-remo.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/clube-do-remo.b65728ef.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "botafogo",
+      "teamName": "Botafogo FR",
+      "file": "logos/brazil/botafogo.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/botafogo.e439f7a4.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "chapecoense",
+      "teamName": "Chapecoense",
+      "file": "logos/brazil/chapecoense.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/chapecoense.7256ba28.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "corinthians",
+      "teamName": "Corinthians",
+      "file": "logos/brazil/corinthians.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/corinthians.c51ae739.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "coritiba",
+      "teamName": "Coritiba",
+      "file": "logos/brazil/coritiba.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/coritiba.6d282e13.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "cruzeiro",
+      "teamName": "Cruzeiro",
+      "file": "logos/brazil/cruzeiro.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/cruzeiro.6c188ab8.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "flamengo",
+      "teamName": "Flamengo",
+      "file": "logos/brazil/flamengo.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/flamengo.9c3055f2.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "fluminense",
+      "teamName": "Fluminense",
+      "file": "logos/brazil/fluminense.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/fluminense.118d8b5e.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "gremio",
+      "teamName": "Grêmio",
+      "file": "logos/brazil/gremio.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/gremio.d252cec9.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "internacional",
+      "teamName": "Internacional",
+      "file": "logos/brazil/internacional.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/internacional.82f72a2f.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "mirassol",
+      "teamName": "Mirassol",
+      "file": "logos/brazil/mirassol.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/mirassol.3da1a222.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "palmeiras",
+      "teamName": "Palmeiras",
+      "file": "logos/brazil/palmeiras.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/palmeiras.9ab1d558.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "rb-bragantino",
+      "teamName": "RB Bragantino",
+      "file": "logos/brazil/rb-bragantino.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/rb-bragantino.58ea7195.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "sao-paulo",
+      "teamName": "São Paulo",
+      "file": "logos/brazil/sao-paulo.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/sao-paulo.468eaeb3.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "santos",
+      "teamName": "Santos FC",
+      "file": "logos/brazil/santos.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/santos.5ea20e58.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "vasco-da-gama",
+      "teamName": "Vasco da Gama",
+      "file": "logos/brazil/vasco-da-gama.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/vasco-da-gama.74746cfd.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-a",
+      "leagueName": "Brasileirão Série A",
+      "teamSlug": "vitoria",
+      "teamName": "Vitória",
+      "file": "logos/brazil/vitoria.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/vitoria.227522d4.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "america-mineiro",
+      "teamName": "América Mineiro",
+      "file": "logos/brazil/america-mineiro.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/america-mineiro.c851fba8.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "athletic",
+      "teamName": "Athletic",
+      "file": "logos/brazil/athletic.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/athletic.c4c0b466.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "atletico-goianiense",
+      "teamName": "Atlético Goianiense",
+      "file": "logos/brazil/atletico-goianiense.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/atletico-goianiense.4eadd950.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "avai",
+      "teamName": "Avai",
+      "file": "logos/brazil/avai.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/avai.cdb69a77.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "botafogo-sp",
+      "teamName": "Botafogo SP",
+      "file": "logos/brazil/botafogo-sp.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/botafogo-sp.50f2da52.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "ceara",
+      "teamName": "Ceará",
+      "file": "logos/brazil/ceara.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/ceara.ea9d0cdd.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "crb",
+      "teamName": "Clube de Regatas Brasil",
+      "file": "logos/brazil/crb.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/crb.f44e564b.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "criciuma",
+      "teamName": "Criciúma",
+      "file": "logos/brazil/criciuma.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/criciuma.d06aa52e.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "cuiaba",
+      "teamName": "Cuiabá",
+      "file": "logos/brazil/cuiaba.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/cuiaba.2ff467a8.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "fortaleza",
+      "teamName": "Fortaleza",
+      "file": "logos/brazil/fortaleza.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/fortaleza.5f34e5ff.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "goias",
+      "teamName": "Goiás",
+      "file": "logos/brazil/goias.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/goias.e5a0bc09.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "londrina",
+      "teamName": "Londrina",
+      "file": "logos/brazil/londrina.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/londrina.12439216.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "juventude",
+      "teamName": "Juventude",
+      "file": "logos/brazil/juventude.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/juventude.fe8abf7c.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "nautico",
+      "teamName": "Náutico",
+      "file": "logos/brazil/nautico.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/nautico.c4fb9d71.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "novorizontino",
+      "teamName": "Grêmio Novorizontino",
+      "file": "logos/brazil/novorizontino.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/novorizontino.689cca10.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "operario-ferroviario",
+      "teamName": "Operário Ferroviário",
+      "file": "logos/brazil/operario-ferroviario.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/operario-ferroviario.9fc8aa8a.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "ponte-preta",
+      "teamName": "Ponte Preta",
+      "file": "logos/brazil/ponte-preta.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/ponte-preta.211c18b1.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "sao-bernardo",
+      "teamName": "São Bernardo",
+      "file": "logos/brazil/sao-bernardo.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/sao-bernardo.497b05ff.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "sport-recife",
+      "teamName": "Sport Recife",
+      "file": "logos/brazil/sport-recife.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/sport-recife.42103cc4.png"
+    },
+    {
+      "country": "brazil",
+      "countryCode": "br",
+      "leagueSlug": "brasileirao-serie-b",
+      "leagueName": "Brasileirão Série B",
+      "teamSlug": "vila-nova",
+      "teamName": "Vila Nova",
+      "file": "logos/brazil/vila-nova.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/brazil/256x256/vila-nova.cbb31747.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "arsenal",
+      "teamName": "Arsenal",
+      "file": "logos/england/arsenal.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/arsenal.e5528ede.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "aston-villa",
+      "teamName": "Aston Villa",
+      "file": "logos/england/aston-villa.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/aston-villa.07a2646c.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "chelsea",
+      "teamName": "Chelsea",
+      "file": "logos/england/chelsea.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/chelsea.ede8a2a7.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "everton",
+      "teamName": "Everton",
+      "file": "logos/england/everton.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/everton.6b635cd7.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "liverpool",
+      "teamName": "Liverpool FC",
+      "file": "logos/england/liverpool.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/liverpool.99c48ae3.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "manchester-city",
+      "teamName": "Manchester City",
+      "file": "logos/england/manchester-city.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/manchester-city.62f9d1f2.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "manchester-united",
+      "teamName": "Manchester United",
+      "file": "logos/england/manchester-united.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/manchester-united.7ab9d343.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "newcastle",
+      "teamName": "Newcastle",
+      "file": "logos/england/newcastle.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/newcastle.53b65b3d.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "tottenham",
+      "teamName": "Tottenham",
+      "file": "logos/england/tottenham.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/tottenham.f192bf50.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "bournemouth",
+      "teamName": "Bournemouth",
+      "file": "logos/england/bournemouth.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/bournemouth.1a237aee.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "brentford",
+      "teamName": "Brentford",
+      "file": "logos/england/brentford.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/brentford.e3296e20.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "brighton",
+      "teamName": "Brighton",
+      "file": "logos/england/brighton.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/brighton.5da206a0.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "coventry-city",
+      "teamName": "Coventry City",
+      "file": "logos/england/coventry-city.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/coventry-city.0d74fc5a.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "crystal-palace",
+      "teamName": "Crystal Palace",
+      "file": "logos/england/crystal-palace.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/crystal-palace.53067b96.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "fulham",
+      "teamName": "Fulham",
+      "file": "logos/england/fulham.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/fulham.4c7ce48b.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "hull-city",
+      "teamName": "Hull City",
+      "file": "logos/england/hull-city.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/hull-city.28918662.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "ipswich",
+      "teamName": "Ipswich",
+      "file": "logos/england/ipswich.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/ipswich.86fda687.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "leeds-united",
+      "teamName": "Leeds United",
+      "file": "logos/england/leeds-united.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/leeds-united.26dba8f5.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "nottingham-forest",
+      "teamName": "Nottingham Forest",
+      "file": "logos/england/nottingham-forest.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/nottingham-forest.43b53a26.png"
+    },
+    {
+      "country": "england",
+      "countryCode": "gb-eng",
+      "leagueSlug": "premier-league",
+      "leagueName": "Premier League",
+      "teamSlug": "sunderland",
+      "teamName": "Sunderland",
+      "file": "logos/england/sunderland.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/england/256x256/sunderland.2f55baea.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "barcelona",
+      "teamName": "Barcelona",
+      "file": "logos/spain/barcelona.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/barcelona.779f8f0f.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "real-madrid",
+      "teamName": "Real Madrid",
+      "file": "logos/spain/real-madrid.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/real-madrid.5ce15611.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "atletico-madrid",
+      "teamName": "Atletico Madrid",
+      "file": "logos/spain/atletico-madrid.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/atletico-madrid.ba72e2cf.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "sevilla",
+      "teamName": "Sevilla",
+      "file": "logos/spain/sevilla.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/sevilla.b741a6ce.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "valencia",
+      "teamName": "Valencia",
+      "file": "logos/spain/valencia.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/valencia.f9d9eee2.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "villarreal",
+      "teamName": "Villarreal",
+      "file": "logos/spain/villarreal.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/villarreal.b0313369.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "real-betis",
+      "teamName": "Real Betis",
+      "file": "logos/spain/real-betis.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/real-betis.7bb10421.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "real-sociedad",
+      "teamName": "Real Sociedad",
+      "file": "logos/spain/real-sociedad.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/real-sociedad.501e3b1e.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "athletic-club",
+      "teamName": "Athletic Club Bilbao",
+      "file": "logos/spain/athletic-club.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/athletic-club.e1bfba0c.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "espanyol",
+      "teamName": "Espanyol",
+      "file": "logos/spain/espanyol.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/espanyol.813c5e9a.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "celta",
+      "teamName": "Celta",
+      "file": "logos/spain/celta.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/celta.37e88c80.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "deportivo",
+      "teamName": "Deportivo Alavés",
+      "file": "logos/spain/deportivo.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/deportivo.0a00d5ef.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "deportivo-la-coruna",
+      "teamName": "Deportivo La Coruña",
+      "file": "logos/spain/deportivo-la-coruna.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/deportivo-la-coruna.c1c8cc29.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "elche",
+      "teamName": "Elche",
+      "file": "logos/spain/elche.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/elche.027b16d8.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "getafe",
+      "teamName": "Getafe",
+      "file": "logos/spain/getafe.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/getafe.edd42c3d.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "levante",
+      "teamName": "Levante",
+      "file": "logos/spain/levante.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/levante.f0f15e76.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "malaga",
+      "teamName": "Málaga",
+      "file": "logos/spain/malaga.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/malaga.87c4eb85.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "osasuna",
+      "teamName": "Osasuna",
+      "file": "logos/spain/osasuna.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/osasuna.c82eefd4.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "racing",
+      "teamName": "Racing Santander",
+      "file": "logos/spain/racing.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/racing.0307d989.png"
+    },
+    {
+      "country": "spain",
+      "countryCode": "es",
+      "leagueSlug": "la-liga",
+      "leagueName": "La Liga",
+      "teamSlug": "rayo-vallecano",
+      "teamName": "Rayo Vallecano",
+      "file": "logos/spain/rayo-vallecano.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/spain/256x256/rayo-vallecano.01403ff8.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "juventus",
+      "teamName": "Juventus",
+      "file": "logos/italy/juventus.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/juventus.a8baf848.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "milan",
+      "teamName": "Milan",
+      "file": "logos/italy/milan.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/milan.75d56f90.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "inter",
+      "teamName": "Inter",
+      "file": "logos/italy/inter.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/inter.3a7ce90c.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "napoli",
+      "teamName": "Napoli",
+      "file": "logos/italy/napoli.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/napoli.ee47a50b.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "roma",
+      "teamName": "Roma",
+      "file": "logos/italy/roma.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/roma.034a933e.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "lazio",
+      "teamName": "Lazio",
+      "file": "logos/italy/lazio.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/lazio.2386d28d.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "fiorentina",
+      "teamName": "Fiorentina",
+      "file": "logos/italy/fiorentina.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/fiorentina.7ba101c2.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "atalanta",
+      "teamName": "Atalanta",
+      "file": "logos/italy/atalanta.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/atalanta.45225436.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "bologna",
+      "teamName": "Bologna",
+      "file": "logos/italy/bologna.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/bologna.a78d435f.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "cagliari",
+      "teamName": "Cagliari",
+      "file": "logos/italy/cagliari.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/cagliari.1c3353f1.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "como-1907",
+      "teamName": "Como 1907",
+      "file": "logos/italy/como-1907.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/como-1907.1a1430cd.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "frosinone",
+      "teamName": "Frosinone Calcio",
+      "file": "logos/italy/frosinone.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/frosinone.8cc89626.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "genoa",
+      "teamName": "Genoa",
+      "file": "logos/italy/genoa.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/genoa.a5ec9be4.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "lecce",
+      "teamName": "Lecce",
+      "file": "logos/italy/lecce.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/lecce.18baee06.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "monza",
+      "teamName": "Monza",
+      "file": "logos/italy/monza.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/monza.a0b0c166.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "parma",
+      "teamName": "Parma",
+      "file": "logos/italy/parma.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/parma.ca4e3120.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "sassuolo",
+      "teamName": "Sassuolo",
+      "file": "logos/italy/sassuolo.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/sassuolo.1b38db1d.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "torino",
+      "teamName": "Torino",
+      "file": "logos/italy/torino.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/torino.a6c78dd6.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "udinese",
+      "teamName": "Udinese",
+      "file": "logos/italy/udinese.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/udinese.a69e0bef.png"
+    },
+    {
+      "country": "italy",
+      "countryCode": "it",
+      "leagueSlug": "serie-a",
+      "leagueName": "Serie A",
+      "teamSlug": "venezia",
+      "teamName": "Venezia",
+      "file": "logos/italy/venezia.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/italy/256x256/venezia.88255863.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "bayern-munchen",
+      "teamName": "Bayern Munich",
+      "file": "logos/germany/bayern-munchen.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/bayern-munchen.6c38f13a.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "borussia-dortmund",
+      "teamName": "Borussia Dortmund",
+      "file": "logos/germany/borussia-dortmund.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/borussia-dortmund.09ffedcd.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "rb-leipzig",
+      "teamName": "RB Leipzig",
+      "file": "logos/germany/rb-leipzig.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/rb-leipzig.9d65faeb.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "bayer-leverkusen",
+      "teamName": "Bayer Leverkusen",
+      "file": "logos/germany/bayer-leverkusen.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/bayer-leverkusen.72f211d8.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "eintracht-frankfurt",
+      "teamName": "Eintracht Frankfurt",
+      "file": "logos/germany/eintracht-frankfurt.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/eintracht-frankfurt.a8244b07.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "union-berlin",
+      "teamName": "Union Berlin",
+      "file": "logos/germany/union-berlin.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/union-berlin.b0d180f9.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "schalke-04",
+      "teamName": "Schalke 04",
+      "file": "logos/germany/schalke-04.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/schalke-04.9a871467.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "hamburger-sv",
+      "teamName": "Hamburger SV",
+      "file": "logos/germany/hamburger-sv.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/hamburger-sv.04c2a597.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "augsburg",
+      "teamName": "Augsburg",
+      "file": "logos/germany/augsburg.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/augsburg.2bc910e0.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "werder-bremen",
+      "teamName": "Werder Bremen",
+      "file": "logos/germany/werder-bremen.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/werder-bremen.f8333154.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "freiburg",
+      "teamName": "Freiburg",
+      "file": "logos/germany/freiburg.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/freiburg.2eec4784.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "hoffenheim",
+      "teamName": "Hoffenheim",
+      "file": "logos/germany/hoffenheim.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/hoffenheim.23c07771.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "koln",
+      "teamName": "Cologne",
+      "file": "logos/germany/koln.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/koln.47dabc55.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "mainz-05",
+      "teamName": "Mainz 05",
+      "file": "logos/germany/mainz-05.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/mainz-05.508fc81a.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "borussia-monchengladbach",
+      "teamName": "Borussia Mönchengladbach",
+      "file": "logos/germany/borussia-monchengladbach.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/borussia-monchengladbach.94366357.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "paderborn",
+      "teamName": "SC Paderborn",
+      "file": "logos/germany/paderborn.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/paderborn.a693c715.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "sv-elversberg",
+      "teamName": "SV Elversberg",
+      "file": "logos/germany/sv-elversberg.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/sv-elversberg.b3a70987.png"
+    },
+    {
+      "country": "germany",
+      "countryCode": "de",
+      "leagueSlug": "bundesliga",
+      "leagueName": "Bundesliga",
+      "teamSlug": "vfb-stuttgart",
+      "teamName": "VfB Stuttgart",
+      "file": "logos/germany/vfb-stuttgart.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/germany/256x256/vfb-stuttgart.5b4b15e7.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "paris-saint-germain",
+      "teamName": "Paris Saint-Germain (PSG)",
+      "file": "logos/france/paris-saint-germain.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/paris-saint-germain.579907dc.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "angers",
+      "teamName": "Angers",
+      "file": "logos/france/angers.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/angers.e33bec50.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "auxerre",
+      "teamName": "Auxerre",
+      "file": "logos/france/auxerre.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/auxerre.1eaae387.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "brest",
+      "teamName": "Brest",
+      "file": "logos/france/brest.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/brest.bdb50f5e.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "le-havre-ac",
+      "teamName": "Le Havre AC",
+      "file": "logos/france/le-havre-ac.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/le-havre-ac.8456f0f4.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "rc-lens",
+      "teamName": "RC Lens",
+      "file": "logos/france/rc-lens.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/rc-lens.efcf2aff.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "le-mans",
+      "teamName": "Le Mans FC",
+      "file": "logos/france/le-mans.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/le-mans.11967218.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "lille",
+      "teamName": "Lille",
+      "file": "logos/france/lille.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/lille.451f5326.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "lorient",
+      "teamName": "Lorient FC",
+      "file": "logos/france/lorient.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/lorient.4ae29510.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "lyon",
+      "teamName": "Olympique Lyonnais",
+      "file": "logos/france/lyon.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/lyon.b44ff7aa.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "marseille",
+      "teamName": "Marseille",
+      "file": "logos/france/marseille.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/marseille.92b6437c.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "as-monaco",
+      "teamName": "AS Monaco",
+      "file": "logos/france/as-monaco.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/as-monaco.51dd5065.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "nice",
+      "teamName": "Nice",
+      "file": "logos/france/nice.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/nice.e1cdc4f3.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "paris-fc",
+      "teamName": "Paris FC",
+      "file": "logos/france/paris-fc.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/paris-fc.3e31d6c5.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "rennes",
+      "teamName": "Rennes",
+      "file": "logos/france/rennes.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/rennes.6d90b3c1.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "rc-strasbourg-alsace",
+      "teamName": "RC Strasbourg Alsace",
+      "file": "logos/france/rc-strasbourg-alsace.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/rc-strasbourg-alsace.d91bd009.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "toulouse",
+      "teamName": "Toulouse",
+      "file": "logos/france/toulouse.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/toulouse.67db8b0f.png"
+    },
+    {
+      "country": "france",
+      "countryCode": "fr",
+      "leagueSlug": "ligue-1",
+      "leagueName": "Ligue 1",
+      "teamSlug": "troyes",
+      "teamName": "Troyes",
+      "file": "logos/france/troyes.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/france/256x256/troyes.696cfe28.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "sporting-cp",
+      "teamName": "Sporting CP",
+      "file": "logos/portugal/sporting-cp.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/sporting-cp.8b32e971.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "benfica",
+      "teamName": "Benfica",
+      "file": "logos/portugal/benfica.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/benfica.3e4d3034.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "fc-porto",
+      "teamName": "FC Porto",
+      "file": "logos/portugal/fc-porto.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/fc-porto.b58f31f6.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "academico-de-viseu",
+      "teamName": "Académico de Viseu",
+      "file": "logos/portugal/academico-de-viseu.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/academico-de-viseu.474a481b.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "alverca",
+      "teamName": "Alverca",
+      "file": "logos/portugal/alverca.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/alverca.5fa8ebbd.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "arouca",
+      "teamName": "Arouca",
+      "file": "logos/portugal/arouca.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/arouca.24305e8e.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "casa-pia-ac",
+      "teamName": "Casa Pia AC",
+      "file": "logos/portugal/casa-pia-ac.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/casa-pia-ac.e420c7ad.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "estrela-da-amadora",
+      "teamName": "Estrela da Amadora",
+      "file": "logos/portugal/estrela-da-amadora.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/estrela-da-amadora.adcd4744.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "estoril",
+      "teamName": "Estoril",
+      "file": "logos/portugal/estoril.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/estoril.d82142b7.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "famalicao",
+      "teamName": "Famalicao",
+      "file": "logos/portugal/famalicao.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/famalicao.98d6893a.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "gil-vicente",
+      "teamName": "Gil Vicente",
+      "file": "logos/portugal/gil-vicente.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/gil-vicente.d1a5cb58.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "maritimo",
+      "teamName": "Marítimo",
+      "file": "logos/portugal/maritimo.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/maritimo.b5b1d5e8.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "moreirense",
+      "teamName": "Moreirense",
+      "file": "logos/portugal/moreirense.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/moreirense.f949266c.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "nacional-da-madeira",
+      "teamName": "Nacional da Madeira",
+      "file": "logos/portugal/nacional-da-madeira.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/nacional-da-madeira.de01d6d6.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "rio-ave",
+      "teamName": "Rio Ave",
+      "file": "logos/portugal/rio-ave.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/rio-ave.0818d764.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "santa-clara",
+      "teamName": "Santa Clara",
+      "file": "logos/portugal/santa-clara.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/santa-clara.8e386186.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "sc-braga",
+      "teamName": "SC Braga",
+      "file": "logos/portugal/sc-braga.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/sc-braga.07de49c7.png"
+    },
+    {
+      "country": "portugal",
+      "countryCode": "pt",
+      "leagueSlug": "primeira-liga",
+      "leagueName": "Primeira Liga",
+      "teamSlug": "vitoria-de-guimaraes",
+      "teamName": "Vitória de Guimarães",
+      "file": "logos/portugal/vitoria-de-guimaraes.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/portugal/256x256/vitoria-de-guimaraes.6e889363.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "psv",
+      "teamName": "PSV Eindhoven",
+      "file": "logos/netherlands/psv.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/psv.b5ebd0db.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "ajax",
+      "teamName": "Ajax",
+      "file": "logos/netherlands/ajax.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/ajax.fadc62c4.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "feyenoord",
+      "teamName": "Feyenoord",
+      "file": "logos/netherlands/feyenoord.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/feyenoord.06e393bc.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "fc-utrecht",
+      "teamName": "FC Utrecht",
+      "file": "logos/netherlands/fc-utrecht.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/fc-utrecht.a8ccd806.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "az-alkmaar",
+      "teamName": "AZ Alkmaar",
+      "file": "logos/netherlands/az-alkmaar.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/az-alkmaar.a5883ab7.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "twente",
+      "teamName": "Twente",
+      "file": "logos/netherlands/twente.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/twente.6ab33058.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "ado-den-haag",
+      "teamName": "ADO Den Haag",
+      "file": "logos/netherlands/ado-den-haag.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/ado-den-haag.aed6f890.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "excelsior-rotterdam",
+      "teamName": "Excelsior Rotterdam",
+      "file": "logos/netherlands/excelsior-rotterdam.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/excelsior-rotterdam.283370b9.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "telstar",
+      "teamName": "Telstar",
+      "file": "logos/netherlands/telstar.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/telstar.c6ac77b5.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "fortuna-sittard",
+      "teamName": "Fortuna Sittard",
+      "file": "logos/netherlands/fortuna-sittard.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/fortuna-sittard.05ad8019.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "go-ahead-eagles",
+      "teamName": "Go Ahead Eagles",
+      "file": "logos/netherlands/go-ahead-eagles.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/go-ahead-eagles.8a93983d.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "fc-groningen",
+      "teamName": "FC Groningen",
+      "file": "logos/netherlands/fc-groningen.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/fc-groningen.7adf21bc.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "sc-heerenveen",
+      "teamName": "sc Heerenveen",
+      "file": "logos/netherlands/sc-heerenveen.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/sc-heerenveen.c36c6c06.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "nec-nijmegen",
+      "teamName": "N.E.C. Nijmegen",
+      "file": "logos/netherlands/nec-nijmegen.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/nec-nijmegen.e9cc5441.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "sparta-rotterdam",
+      "teamName": "Sparta Rotterdam",
+      "file": "logos/netherlands/sparta-rotterdam.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/sparta-rotterdam.03d6a993.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "willem-ii",
+      "teamName": "Willem II",
+      "file": "logos/netherlands/willem-ii.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/willem-ii.e9a62d88.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "pec-zwolle",
+      "teamName": "PEC Zwolle",
+      "file": "logos/netherlands/pec-zwolle.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/pec-zwolle.bb36e35d.png"
+    },
+    {
+      "country": "netherlands",
+      "countryCode": "nl",
+      "leagueSlug": "eredivisie",
+      "leagueName": "Eredivisie",
+      "teamSlug": "sc-cambuur",
+      "teamName": "SC Cambuur",
+      "file": "logos/netherlands/sc-cambuur.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/netherlands/256x256/sc-cambuur.f7025c05.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "aldosivi",
+      "teamName": "Aldosivi",
+      "file": "logos/argentina/aldosivi.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/aldosivi.1869fe02.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "argeninos-juniors",
+      "teamName": "Argeninos Juniors",
+      "file": "logos/argentina/argeninos-juniors.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/argeninos-juniors.a7c47840.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "atletico-tucuman",
+      "teamName": "Atlético Tucumán",
+      "file": "logos/argentina/atletico-tucuman.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/atletico-tucuman.3021868e.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "banfield",
+      "teamName": "Banfield",
+      "file": "logos/argentina/banfield.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/banfield.2b03df71.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "barracas-central",
+      "teamName": "Barracas Central",
+      "file": "logos/argentina/barracas-central.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/barracas-central.d735f375.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "belgrano",
+      "teamName": "Belgrano",
+      "file": "logos/argentina/belgrano.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/belgrano.a9ed5c35.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "boca-juniors",
+      "teamName": "Boca Juniors",
+      "file": "logos/argentina/boca-juniors.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/boca-juniors.533fd0f6.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "ca-huracan",
+      "teamName": "CA Huracán",
+      "file": "logos/argentina/ca-huracan.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/ca-huracan.c9e27138.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "central-cordoba",
+      "teamName": "Central Córdoba",
+      "file": "logos/argentina/central-cordoba.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/central-cordoba.6116953f.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "club-atletico-platanense",
+      "teamName": "Club Atlético Platanense",
+      "file": "logos/argentina/club-atletico-platanense.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/club-atletico-platanense.26183bfd.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "defensa-y-justicia",
+      "teamName": "Defensa y Justicia",
+      "file": "logos/argentina/defensa-y-justicia.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/defensa-y-justicia.00540812.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "deportivo-riestra",
+      "teamName": "Deportivo Riestra",
+      "file": "logos/argentina/deportivo-riestra.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/deportivo-riestra.34842092.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "estudiantes-de-la-plata",
+      "teamName": "Estudiantes de La Plata",
+      "file": "logos/argentina/estudiantes-de-la-plata.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/estudiantes-de-la-plata.c58f9f29.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "gimnasia-lp",
+      "teamName": "Gimnasia LP",
+      "file": "logos/argentina/gimnasia-lp.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/gimnasia-lp.9ad61caf.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "independiente",
+      "teamName": "Independiente",
+      "file": "logos/argentina/independiente.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/independiente.091ccb51.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "independiente-rivadavia",
+      "teamName": "Independiente Rivadavia",
+      "file": "logos/argentina/independiente-rivadavia.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/independiente-rivadavia.fd293578.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "instituto-cordoba",
+      "teamName": "Instituto Córdoba",
+      "file": "logos/argentina/instituto-cordoba.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/instituto-cordoba.9dd5a11e.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "lanus",
+      "teamName": "Lanús",
+      "file": "logos/argentina/lanus.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/lanus.0b3284dc.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "newells-old-boys",
+      "teamName": "Newell's Old Boys",
+      "file": "logos/argentina/newells-old-boys.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/newells-old-boys.323439bf.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "racing-club",
+      "teamName": "Racing Club",
+      "file": "logos/argentina/racing-club.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/racing-club.2b4a44c9.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "river-plate",
+      "teamName": "River Plate",
+      "file": "logos/argentina/river-plate.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/river-plate.44a77530.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "rosario-central",
+      "teamName": "Rosario Central",
+      "file": "logos/argentina/rosario-central.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/rosario-central.3341c8bd.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "san-lorenzo-de-almagro",
+      "teamName": "San Lorenzo de Almagro",
+      "file": "logos/argentina/san-lorenzo-de-almagro.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/san-lorenzo-de-almagro.94d7129e.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "sarmiento",
+      "teamName": "Sarmiento",
+      "file": "logos/argentina/sarmiento.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/sarmiento.8f0e71f1.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "talleres",
+      "teamName": "Talleres",
+      "file": "logos/argentina/talleres.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/talleres.1dcd3bf7.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "tigre",
+      "teamName": "Tigre",
+      "file": "logos/argentina/tigre.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/tigre.81ae80b6.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "union",
+      "teamName": "Union",
+      "file": "logos/argentina/union.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/union.b8de0704.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "velez-sarsfield",
+      "teamName": "Vélez Sarsfield",
+      "file": "logos/argentina/velez-sarsfield.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/velez-sarsfield.d9813ef4.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "gimnasia-y-esgrima",
+      "teamName": "Gimnasia y Esgrima",
+      "file": "logos/argentina/gimnasia-y-esgrima.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/gimnasia-y-esgrima.cf409b59.png"
+    },
+    {
+      "country": "argentina",
+      "countryCode": "ar",
+      "leagueSlug": "primera-division-arg",
+      "leagueName": "Primera División",
+      "teamSlug": "estudiantes-de-rio-cuarto",
+      "teamName": "Estudiantes de Rio Cuarto",
+      "file": "logos/argentina/estudiantes-de-rio-cuarto.png",
+      "sourceUrl": "https://assets.football-logos.cc/logos/argentina/256x256/estudiantes-de-rio-cuarto.96786cb1.png"
+    }
+  ]
+}

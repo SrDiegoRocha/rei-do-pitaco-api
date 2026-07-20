@@ -49,9 +49,10 @@ public class TeamController {
             @AuthenticationPrincipal String ownerPublicId,
             @RequestParam(required = false) TeamScope scope,
             @RequestParam(required = false) TeamType type,
+            @RequestParam(required = false) String league,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(teamService.list(UUID.fromString(ownerPublicId), scope, type, pageable));
+        return ResponseEntity.ok(teamService.list(UUID.fromString(ownerPublicId), scope, type, league, pageable));
     }
 
     @GetMapping("/{id}")

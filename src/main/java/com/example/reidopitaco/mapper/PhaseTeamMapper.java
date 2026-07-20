@@ -4,10 +4,17 @@ import com.example.reidopitaco.dto.response.PhaseTeamResponse;
 import com.example.reidopitaco.entity.PhaseGroup;
 import com.example.reidopitaco.entity.PhaseTeam;
 import com.example.reidopitaco.entity.Team;
+import com.example.reidopitaco.service.AssetUrlResolver;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PhaseTeamMapper {
+
+    private final AssetUrlResolver assetUrlResolver;
+
+    public PhaseTeamMapper(AssetUrlResolver assetUrlResolver) {
+        this.assetUrlResolver = assetUrlResolver;
+    }
 
     public PhaseTeamResponse toResponse(PhaseTeam phaseTeam) {
         Team team = phaseTeam.getTeam();
@@ -16,7 +23,7 @@ public class PhaseTeamMapper {
                 team.getPublicId(),
                 team.getName(),
                 team.getShortName(),
-                team.getBadgeUrl(),
+                assetUrlResolver.resolve(team.getBadgeUrl()),
                 team.getPrimaryColor(),
                 team.getSecondaryColor(),
                 team.getTeamType(),

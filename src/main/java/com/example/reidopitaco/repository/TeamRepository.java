@@ -25,7 +25,8 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     /**
      * Busca times ativos por escopo: os do próprio usuário ({@code includeMine}) e/ou os do sistema
-     * ({@code includeSystem}), opcionalmente filtrando por {@code type} (null = qualquer tipo).
+     * ({@code includeSystem}), opcionalmente filtrando por {@code type} (null = qualquer tipo)
+     * e por {@code leagueSlug} (null = qualquer liga; só clubes do sistema têm liga).
      */
     @Query("""
             SELECT t FROM Team t
@@ -34,12 +35,14 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
               AND ( (:includeMine = true AND o.publicId = :ownerPublicId)
                     OR (:includeSystem = true AND t.system = true) )
               AND (:type IS NULL OR t.teamType = :type)
+              AND (:leagueSlug IS NULL OR t.leagueSlug = :leagueSlug)
             """)
     Page<Team> search(
             @Param("includeMine") boolean includeMine,
             @Param("includeSystem") boolean includeSystem,
             @Param("ownerPublicId") UUID ownerPublicId,
             @Param("type") TeamType type,
+            @Param("leagueSlug") String leagueSlug,
             Pageable pageable
     );
 }

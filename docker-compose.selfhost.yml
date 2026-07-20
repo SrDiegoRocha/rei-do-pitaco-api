@@ -30,6 +30,14 @@ services:
     container_name: reidopitaco-api
     restart: unless-stopped
     env_file: .env
+    environment:
+      # Escudos self-hosted: a pasta ./logos do repo é montada no container e
+      # servida pela API em GET /logos/**. badge_url relativo no banco ganha o
+      # prefixo ASSETS_BASE_URL na leitura.
+      LOGOS_DIR: /app/logos
+      ASSETS_BASE_URL: ${ASSETS_BASE_URL:-https://api.pitaco.dpdns.org}
+    volumes:
+      - ./logos:/app/logos:ro
     depends_on:
       postgres:
         condition: service_healthy
