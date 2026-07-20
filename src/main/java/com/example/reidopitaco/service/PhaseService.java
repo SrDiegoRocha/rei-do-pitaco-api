@@ -80,6 +80,11 @@ public class PhaseService {
                         request.phaseType() == TournamentPhaseType.KNOCKOUT
                                 && Boolean.TRUE.equals(request.hasThirdPlace())
                 )
+                .finalLegMode(
+                        request.phaseType() == TournamentPhaseType.KNOCKOUT
+                                ? request.finalLegMode()
+                                : null
+                )
                 .build();
 
         TournamentPhase saved = phaseRepository.save(phase);
@@ -131,6 +136,11 @@ public class PhaseService {
         phase.setHasThirdPlace(
                 request.phaseType() == TournamentPhaseType.KNOCKOUT
                         && Boolean.TRUE.equals(request.hasThirdPlace())
+        );
+        phase.setFinalLegMode(
+                request.phaseType() == TournamentPhaseType.KNOCKOUT
+                        ? request.finalLegMode()
+                        : null
         );
 
         return toResponse(phaseRepository.saveAndFlush(phase));

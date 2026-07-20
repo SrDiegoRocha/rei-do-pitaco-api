@@ -1,5 +1,6 @@
 package com.example.reidopitaco.dto.response;
 
+import com.example.reidopitaco.enums.MatchLegMode;
 import com.example.reidopitaco.enums.MatchStatus;
 import com.example.reidopitaco.enums.MatchType;
 import com.example.reidopitaco.enums.TeamType;
@@ -15,6 +16,10 @@ public record MatchResponse(
         int round,
         UUID tieId,
         MatchType matchType,
+        // Modo de pernas EFETIVO deste confronto: em KO, a rodada final (final + 3º lugar) pode
+        // ter modo próprio (finalLegMode da fase). Use este campo — não o matchLegMode da fase —
+        // para decidir prorrogação/pênaltis no formulário.
+        MatchLegMode matchLegMode,
         TeamRef homeTeam,
         TeamRef awayTeam,
         Instant scheduledAt,

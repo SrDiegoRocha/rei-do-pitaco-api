@@ -63,6 +63,15 @@ public class TournamentPhase {
     @Column(name = "match_leg_mode", nullable = false, length = 15)
     private MatchLegMode matchLegMode;
 
+    /**
+     * Modo de pernas da <b>rodada final</b> (final + disputa de 3º lugar), decidido pelo admin
+     * independentemente do {@link #matchLegMode} da fase. {@code null} = herda o modo da fase.
+     * Só se aplica a fases KNOCKOUT.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "final_leg_mode", length = 15)
+    private MatchLegMode finalLegMode;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "match_generation_mode", nullable = false, length = 15)
     private MatchGenerationMode matchGenerationMode;

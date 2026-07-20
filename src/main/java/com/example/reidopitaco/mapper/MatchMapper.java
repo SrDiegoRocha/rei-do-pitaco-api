@@ -4,6 +4,7 @@ import com.example.reidopitaco.dto.response.MatchResponse;
 import com.example.reidopitaco.entity.Match;
 import com.example.reidopitaco.entity.PhaseGroup;
 import com.example.reidopitaco.entity.Team;
+import com.example.reidopitaco.service.MatchLegModeResolver;
 import com.example.reidopitaco.service.MatchPenaltyHelper;
 import org.springframework.stereotype.Component;
 
@@ -11,9 +12,11 @@ import org.springframework.stereotype.Component;
 public class MatchMapper {
 
     private final MatchPenaltyHelper penaltyHelper;
+    private final MatchLegModeResolver legModeResolver;
 
-    public MatchMapper(MatchPenaltyHelper penaltyHelper) {
+    public MatchMapper(MatchPenaltyHelper penaltyHelper, MatchLegModeResolver legModeResolver) {
         this.penaltyHelper = penaltyHelper;
+        this.legModeResolver = legModeResolver;
     }
 
     public MatchResponse toResponse(Match match) {
@@ -27,6 +30,7 @@ public class MatchMapper {
                 match.getRound(),
                 match.getTieId(),
                 match.getMatchType(),
+                legModeResolver.effectiveLegMode(match),
                 toTeamRef(match.getHomeTeam()),
                 toTeamRef(match.getAwayTeam()),
                 match.getScheduledAt(),

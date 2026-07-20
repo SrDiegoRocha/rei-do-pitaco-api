@@ -591,6 +591,8 @@ export interface PhaseResponse {
   matchGenerationMode: MatchGenerationMode;
   playsInsideGroupOnly: boolean | null;  // só relevante em GROUPS
   hasThirdPlace: boolean;                // só relevante em KNOCKOUT
+  finalLegMode: MatchLegMode | null;     // só em KNOCKOUT: modo da RODADA FINAL (final + 3º lugar);
+                                         // null = herda o matchLegMode da fase
   groupCount: number;
   teamCount: number;
   finalizedAt: string | null;            // ISO instant; null = fase ainda não finalizada
@@ -600,6 +602,8 @@ export interface PhaseResponse {
 ```
 
 `finalizedAt` é preenchido quando a fase passa pelo `POST .../finalize` com sucesso (e re-escrito se o finalize rodar de novo). Use-o para distinguir "pronta pra finalizar" de "já finalizada": esconder o botão de finalizar, mostrar banner "Fase finalizada em {data}", e travar criação/geração de partidas na UI.
+
+**`finalLegMode`** (novo): em fases `KNOCKOUT`, o admin pode escolher se a **final** é jogo único ou ida-e-volta, independentemente do `matchLegMode` da fase. A escolha vale também para a **disputa de 3º lugar** (mesma rodada). `null` = a final segue o `matchLegMode` normal. Com 2 times na fase (a 1ª rodada já é a final), o `finalLegMode` se aplica desde a 1ª rodada. Nas partidas, o modo **efetivo** de cada confronto vem em `MatchResponse.matchLegMode` (§14) — use-o no lugar do modo da fase para decidir o formulário de prorrogação/pênaltis.
 
 ### `POST /api/tournaments/{tournamentId}/phases` → 201
 
@@ -613,6 +617,7 @@ export interface CreatePhaseRequest {
   matchGenerationMode: MatchGenerationMode;
   playsInsideGroupOnly?: boolean | null;         // só usado em GROUPS
   hasThirdPlace?: boolean | null;                // só usado em KNOCKOUT
+  finalLegMode?: MatchLegMode | null;            // só usado em KNOCKOUT; null = herda matchLegMode
 }
 ```
 
@@ -825,6 +830,7 @@ export interface MatchResponse {
   round: number;
   tieId: string;              // UUID que agrupa pernas de ida e volta
   matchType: MatchType;       // REGULAR | THIRD_PLACE
+  matchLegMode: MatchLegMode; // NOVO — modo de pernas EFETIVO deste confronto (ver nota abaixo)
   homeTeam: TeamRef;
   awayTeam: TeamRef;
   scheduledAt: string | null;
@@ -856,8 +862,10 @@ export interface TeamRef {
 
 > `TeamRef` é usado em `MatchResponse.homeTeam/awayTeam`, nas pernas do bracket (`BracketTie.legs`) e no `BracketTie.homeTeam/awayTeam/winner`. As cores vêm do `Team` (mesmas do CRUD de times).
 
+**`matchLegMode` (efetivo)** — NOVO: o modo de pernas **deste confronto**, já considerando o `finalLegMode` da fase (§10): em KO, a rodada final (final + 3º lugar) pode ser jogo único numa fase ida-e-volta, ou vice-versa. **Use este campo — não o `matchLegMode` da fase — para decidir o formulário de prorrogação/pênaltis** (a regra da §17/§19 "KO jogo único" refere-se sempre ao modo efetivo). Fora de KO (ou sem `finalLegMode`), o valor é simplesmente o modo da fase.
+
 **Campos de apoio ao palpite de pênaltis** (`penaltyShootoutEligible`, `aggregateBeforeHome`, `aggregateBeforeAway`):
-- `penaltyShootoutEligible` = `true` quando um empate **neste confronto** pode ir aos pênaltis no palpite: **jogo único** de KO (`KNOCKOUT` + `matchLegMode=SINGLE`), ou a **perna de volta** (a de maior `round`) de um `TWO_LEGGED`. `false` nos demais (grupos, pontos corridos, **perna de ida**, fora de mata-mata).
+- `penaltyShootoutEligible` = `true` quando um empate **neste confronto** pode ir aos pênaltis no palpite: **jogo único efetivo** de KO (`KNOCKOUT` + `matchLegMode=SINGLE` no nível da partida), ou a **perna de volta** (a de maior `round`) de um confronto ida-e-volta. `false` nos demais (grupos, pontos corridos, **perna de ida**, fora de mata-mata).
 - `aggregateBeforeHome`/`aggregateBeforeAway` = gols já marcados nas **pernas anteriores** do confronto (mesmo `tieId`, partidas `COMPLETED` de `round` menor), **orientados ao mandante/visitante DESTA partida** (não ao da 1ª perna como no `BracketTie`). `0/0` em jogo único, ou enquanto a ida não foi concluída.
 - **Uso no front**: o seletor de "quem avança" aparece (e o `penaltyWinner` é obrigatório) quando `penaltyShootoutEligible && (aggregateBeforeHome + homeScorePalpitado) === (aggregateBeforeAway + awayScorePalpitado)` — ou seja, quando o **agregado** (pernas anteriores + palpite desta) termina empatado. Em jogo único, como o agregado anterior é `0/0`, isso equivale ao empate do placar da própria partida.
 - Exemplo: ida `Cruzeiro 2 x 1 Flamengo`; a volta é `Flamengo x Cruzeiro` → no `MatchResponse` da volta, `aggregateBeforeHome` (Flamengo) = `1`, `aggregateBeforeAway` (Cruzeiro) = `2`.
@@ -932,10 +940,10 @@ export interface SetMatchResultRequest {
 
 Fluxo em KO jogo único: `homeScore`/`awayScore` (90'). Se empatou → informa `homeExtraTimeScore`/`awayExtraTimeScore`. Se a prorrogação empatou → informa `homePenalties`/`awayPenalties`.
 
-**Prorrogação** (extra time — só mata-mata de **jogo único**, `KNOCKOUT` + `matchLegMode = SINGLE`):
+**Prorrogação** (extra time — só mata-mata de **jogo único efetivo**, `KNOCKOUT` + `matchLegMode = SINGLE` no nível da **partida**, §14):
 - **Cumulativa**: inclui os gols do tempo normal, então nunca pode ser menor que o placar do 90' por time (**409** `Extra-time score cannot be lower than the regular-time score`).
 - Vêm em par (**409** `Both extra-time scores must be provided together`).
-- Só em KO jogo único (**409** `Extra time only applies to single-leg KNOCKOUT matches`) e só quando o 90' empatou (**409** `Extra time only applies when regular time ended in a draw`).
+- Só em KO jogo único **efetivo** — vale o `matchLegMode` da partida, que considera o `finalLegMode` da fase (**409** `Extra time only applies to single-leg KNOCKOUT matches`) — e só quando o 90' empatou (**409** `Extra time only applies when regular time ended in a draw`).
 - Quando lançada, é o **placar decisivo**: reflete no agregado/`winner` do bracket e na geração da próxima rodada de KO.
 
 **Pênaltis** (desempate de mata-mata):
@@ -1106,8 +1114,9 @@ Owner-only. Sem body.
 
 **Algoritmo**:
 - `ROUND_ROBIN`/`GROUPS`: algoritmo de círculo (Berger). Shuffle inicial com `SecureRandom`, bye para N ímpar, `N-1` rodadas em `SINGLE` e `2*(N-1)` em `TWO_LEGGED` (ida e volta com `tieId` comum). Em `GROUPS`, executa por grupo.
-- `KNOCKOUT`: requer **potência de 2** de times na primeira chamada (**409** `KNOCKOUT requires a power of 2 of teams (got N)`). Emparelha 1×último, 2×penúltimo, etc. Chamadas seguintes detectam vencedores da rodada anterior (single ou agregado em TWO_LEGGED) e geram a próxima.
+- `KNOCKOUT`: requer **potência de 2** de times na primeira chamada (**409** `KNOCKOUT requires a power of 2 of teams (got N)`). Emparelha 1×último, 2×penúltimo, etc. Chamadas seguintes detectam vencedores da rodada anterior (single ou agregado em TWO_LEGGED) e geram a próxima, **em ordem canônica do bracket** (vencedor do confronto `2j` enfrenta o do `2j+1`).
 - `hasThirdPlace=true` em KNOCKOUT: quando estiver gerando a rodada final, cria também a disputa de 3º lugar entre os 2 perdedores das semifinais.
+- **`finalLegMode` (§10)**: a **rodada final** (final + 3º lugar) é gerada com o modo próprio configurado — ex.: fase `SINGLE` com final `TWO_LEGGED` gera 2 pernas para a final (e para o 3º), fase `TWO_LEGGED` com final `SINGLE` gera 1 jogo só. Com 2 times na fase, vale já na 1ª rodada (que é a final).
 
 **Outros erros possíveis** (todos 409):
 - `Phase already has matches; clear them before generating` (RR/GROUPS)
@@ -1269,9 +1278,9 @@ export interface PlacePredictionRequest {
 }
 ```
 
-#### Cascata de palpite em mata-mata de **jogo único** (`KNOCKOUT` + `matchLegMode = SINGLE`)
+#### Cascata de palpite em mata-mata de **jogo único** (`KNOCKOUT` + `matchLegMode = SINGLE` **efetivo**)
 
-Detecte "jogo único de KO" pelo `phase.phaseType`/`phase.matchLegMode` (o feed pessoal §14.1 traz esses campos no `PhaseRef`). A cascata é validada no backend (**400** se violada), mas o front deve conduzir o formulário:
+Detecte "jogo único de KO" pelo `phase.phaseType` + **`match.matchLegMode`** (o modo efetivo da partida, §14 — não use o `matchLegMode` da fase: a rodada final pode ter modo próprio via `finalLegMode`, §10). O `MatchResponse` está disponível tanto no detalhe da partida quanto dentro do feed pessoal (§14.1, campo `match`). A cascata é validada no backend (**400** se violada), mas o front deve conduzir o formulário:
 
 ```
 1. homeScore / awayScore (tempo normal).

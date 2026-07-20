@@ -16,6 +16,8 @@ public record PhaseResponse(
         MatchGenerationMode matchGenerationMode,
         Boolean playsInsideGroupOnly,
         boolean hasThirdPlace,
+        MatchLegMode finalLegMode,   // modo da rodada final (final + 3º); null = herda matchLegMode
+
         long groupCount,
         long teamCount,
         Instant finalizedAt,

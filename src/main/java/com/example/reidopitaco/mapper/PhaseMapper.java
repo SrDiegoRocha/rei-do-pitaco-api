@@ -17,6 +17,7 @@ public class PhaseMapper {
                 phase.getMatchGenerationMode(),
                 phase.getPlaysInsideGroupOnly(),
                 phase.isHasThirdPlace(),
+                phase.getFinalLegMode(),
                 groupCount,
                 teamCount,
                 phase.getFinalizedAt(),

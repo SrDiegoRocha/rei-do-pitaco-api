@@ -46,6 +46,7 @@ public class MatchService {
     private final MatchMapper mapper;
     private final PredictionService predictionService;
     private final PhasePredictionScoringService phasePredictionScoringService;
+    private final MatchLegModeResolver legModeResolver;
     private final TournamentAccessGuard accessGuard;
     private final MatchNotificationService matchNotificationService;
 
@@ -58,6 +59,7 @@ public class MatchService {
             MatchMapper mapper,
             PredictionService predictionService,
             PhasePredictionScoringService phasePredictionScoringService,
+            MatchLegModeResolver legModeResolver,
             TournamentAccessGuard accessGuard,
             MatchNotificationService matchNotificationService
     ) {
@@ -69,6 +71,7 @@ public class MatchService {
         this.mapper = mapper;
         this.predictionService = predictionService;
         this.phasePredictionScoringService = phasePredictionScoringService;
+        this.legModeResolver = legModeResolver;
         this.accessGuard = accessGuard;
         this.matchNotificationService = matchNotificationService;
     }
@@ -373,9 +376,10 @@ public class MatchService {
     }
 
     /**
-     * Prorrogação do resultado real. Só em KNOCKOUT de jogo único (SINGLE) empatado no tempo normal.
-     * O placar é cumulativo (inclui os gols do tempo normal), então nunca pode ser menor que o do
-     * tempo normal por time. Ambos os campos vêm juntos; ausentes zeram a prorrogação da partida.
+     * Prorrogação do resultado real. Só em KNOCKOUT de jogo único <b>efetivo</b> (a rodada final
+     * pode ter modo próprio — {@link MatchLegModeResolver}) empatado no tempo normal. O placar é
+     * cumulativo (inclui os gols do tempo normal), então nunca pode ser menor que o do tempo
+     * normal por time. Ambos os campos vêm juntos; ausentes zeram a prorrogação da partida.
      */
     private void applyExtraTime(TournamentPhase phase, Match match, SetMatchResultRequest request) {
         Integer he = request.homeExtraTimeScore();
@@ -389,7 +393,7 @@ public class MatchService {
             throw new InvalidMatchException("Both extra-time scores must be provided together");
         }
         if (phase.getPhaseType() != TournamentPhaseType.KNOCKOUT
-                || phase.getMatchLegMode() != MatchLegMode.SINGLE) {
+                || legModeResolver.effectiveLegMode(match) != MatchLegMode.SINGLE) {
             throw new InvalidMatchException("Extra time only applies to single-leg KNOCKOUT matches");
         }
         if (!match.getHomeScore().equals(match.getAwayScore())) {
@@ -419,8 +423,8 @@ public class MatchService {
         if (hp.equals(ap)) {
             throw new InvalidMatchException("Penalty shootout cannot end in a draw");
         }
-        // Jogo único com prorrogação lançada: os pênaltis só fazem sentido se a prorrogação empatou.
-        if (phase.getMatchLegMode() == MatchLegMode.SINGLE
+        // Jogo único (efetivo) com prorrogação lançada: pênaltis só se a prorrogação empatou.
+        if (legModeResolver.effectiveLegMode(match) == MatchLegMode.SINGLE
                 && match.getHomeExtraTimeScore() != null
                 && !match.getHomeExtraTimeScore().equals(match.getAwayExtraTimeScore())) {
             throw new InvalidMatchException("Penalties only apply when extra time ended in a draw");

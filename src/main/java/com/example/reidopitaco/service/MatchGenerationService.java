@@ -46,6 +46,7 @@ public class MatchGenerationService {
     private final MatchRepository matchRepository;
     private final MatchMapper matchMapper;
     private final TieAggregateCalculator tieCalculator;
+    private final MatchLegModeResolver legModeResolver;
     private final SecureRandom random = new SecureRandom();
 
     public MatchGenerationService(
@@ -55,7 +56,8 @@ public class MatchGenerationService {
             PhaseTeamRepository phaseTeamRepository,
             MatchRepository matchRepository,
             MatchMapper matchMapper,
-            TieAggregateCalculator tieCalculator
+            TieAggregateCalculator tieCalculator,
+            MatchLegModeResolver legModeResolver
     ) {
         this.tournamentRepository = tournamentRepository;
         this.phaseRepository = phaseRepository;
@@ -64,6 +66,7 @@ public class MatchGenerationService {
         this.matchRepository = matchRepository;
         this.matchMapper = matchMapper;
         this.tieCalculator = tieCalculator;
+        this.legModeResolver = legModeResolver;
     }
 
     @Transactional
@@ -217,7 +220,10 @@ public class MatchGenerationService {
             throw new MatchGenerationException("KNOCKOUT needs at least 2 teams");
         }
         Collections.shuffle(teams, random);
-        boolean twoLegged = phase.getMatchLegMode() == MatchLegMode.TWO_LEGGED;
+        // Com 2 times, a 1ª rodada JÁ é a final — vale o modo próprio da final, se configurado.
+        boolean twoLegged = n == 2
+                ? legModeResolver.finalRoundLegMode(phase) == MatchLegMode.TWO_LEGGED
+                : phase.getMatchLegMode() == MatchLegMode.TWO_LEGGED;
 
         List<Match> created = new ArrayList<>();
         int homeRound = 1;
@@ -234,41 +240,53 @@ public class MatchGenerationService {
         return created;
     }
 
+    /**
+     * Gera a próxima rodada a partir dos vencedores da última rodada existente. A detecção da
+     * "última rodada" é por <b>confronto</b> (pernas agrupadas por {@code tieId}, rodada = menor
+     * round do confronto) — robusta a modos de perna mistos, já que a rodada final pode ter modo
+     * próprio ({@code finalLegMode}), que vale também para a disputa de 3º lugar. A ordem dos
+     * vencedores é a canônica do bracket (criação da 1ª perna): o vencedor do confronto {@code 2j}
+     * enfrenta o do {@code 2j+1}.
+     */
     private List<Match> generateKnockoutNextRound(TournamentPhase phase, List<Match> existing) {
-        boolean twoLegged = phase.getMatchLegMode() == MatchLegMode.TWO_LEGGED;
-        int maxRound = existing.stream().mapToInt(Match::getRound).max().orElse(0);
-
-        List<Match> latestRoundMatches = existing.stream()
-                .filter(m -> twoLegged ? (m.getRound() == maxRound - 1 || m.getRound() == maxRound)
-                                       : m.getRound() == maxRound)
-                .toList();
-        for (Match m : latestRoundMatches) {
-            if (m.getStatus() == MatchStatus.SCHEDULED) {
-                throw new MatchGenerationException(
-                        "Previous round still has unfinished matches"
-                );
+        // Agrupa por confronto; só REGULAR conta para vencedores/rodadas (a disputa de 3º lugar
+        // convive com a final e não alimenta rodada seguinte).
+        Map<UUID, List<Match>> byTie = new HashMap<>();
+        for (Match m : existing) {
+            byTie.computeIfAbsent(m.getTieId(), k -> new ArrayList<>()).add(m);
+        }
+        List<List<Match>> regularTies = new ArrayList<>();
+        for (List<Match> legs : byTie.values()) {
+            legs.sort(Comparator.comparingInt(Match::getRound)
+                    .thenComparing(Match::getCreatedAt));
+            if (legs.get(0).getMatchType() == MatchType.REGULAR) {
+                regularTies.add(legs);
             }
         }
 
-        Map<UUID, List<Match>> byTie = new HashMap<>();
-        for (Match m : latestRoundMatches) {
-            byTie.computeIfAbsent(m.getTieId(), k -> new ArrayList<>()).add(m);
-        }
+        int lastMinRound = regularTies.stream()
+                .mapToInt(legs -> legs.get(0).getRound())
+                .max()
+                .orElse(0);
+        List<List<Match>> lastRoundTies = regularTies.stream()
+                .filter(legs -> legs.get(0).getRound() == lastMinRound)
+                .sorted(Comparator.comparing(legs -> legs.get(0).getCreatedAt()))
+                .toList();
 
-        // Ordem canônica do chaveamento (a mesma do bracket read model): pernas ordenadas por
-        // round/criação e confrontos pela criação da 1ª perna. Iterar o HashMap direto deixava a
-        // ordem dos vencedores efetivamente aleatória — o emparelhamento da próxima rodada não
-        // seguia a árvore exibida no bracket. Com a ordem canônica, o vencedor do confronto 2j
-        // enfrenta o do 2j+1, como o usuário espera (e como o Pick'em de fase apresenta).
-        List<List<Match>> orderedTies = new ArrayList<>(byTie.values());
-        for (List<Match> legs : orderedTies) {
-            legs.sort(Comparator.comparingInt(Match::getRound)
-                    .thenComparing(Match::getCreatedAt));
+        // Rodada com um único confronto REGULAR = a final já existe; nada mais a gerar.
+        if (lastRoundTies.size() == 1) {
+            throw new MatchGenerationException("Phase already has a champion; no more rounds to generate");
         }
-        orderedTies.sort(Comparator.comparing(legs -> legs.get(0).getCreatedAt()));
+        for (List<Match> legs : lastRoundTies) {
+            for (Match m : legs) {
+                if (m.getStatus() == MatchStatus.SCHEDULED) {
+                    throw new MatchGenerationException("Previous round still has unfinished matches");
+                }
+            }
+        }
 
         List<Team> winners = new ArrayList<>();
-        for (List<Match> legs : orderedTies) {
+        for (List<Match> legs : lastRoundTies) {
             Team winner = resolveTieWinner(legs);
             if (winner == null) {
                 throw new MatchGenerationException(
@@ -278,16 +296,24 @@ public class MatchGenerationService {
             }
             winners.add(winner);
         }
-
-        if (winners.size() == 1) {
-            throw new MatchGenerationException("Phase already has a champion; no more rounds to generate");
+        if (winners.size() % 2 != 0) {
+            throw new MatchGenerationException(
+                    "KNOCKOUT requires an even number of winners to pair (got " + winners.size() + ")"
+            );
         }
+
+        // A próxima rodada é a final quando restam exatamente 2 vencedores — ela (e o 3º lugar)
+        // segue o finalLegMode configurado; as demais rodadas seguem o matchLegMode da fase.
+        boolean nextIsFinal = winners.size() == 2;
+        boolean twoLegged = nextIsFinal
+                ? legModeResolver.finalRoundLegMode(phase) == MatchLegMode.TWO_LEGGED
+                : phase.getMatchLegMode() == MatchLegMode.TWO_LEGGED;
 
         Team finalLoserA = null;
         Team finalLoserB = null;
-        boolean isFinalRound = winners.size() == 2 && phase.isHasThirdPlace();
-        if (isFinalRound) {
-            for (List<Match> legs : orderedTies) {
+        boolean withThirdPlace = nextIsFinal && phase.isHasThirdPlace();
+        if (withThirdPlace) {
+            for (List<Match> legs : lastRoundTies) {
                 Team loser = resolveTieLoser(legs);
                 if (loser == null) continue;
                 if (finalLoserA == null) finalLoserA = loser;
@@ -295,8 +321,9 @@ public class MatchGenerationService {
             }
         }
 
-        int nextHomeRound = twoLegged ? maxRound + 1 : maxRound + 1;
-        int nextReturnRound = twoLegged ? maxRound + 2 : maxRound + 1;
+        int maxRound = existing.stream().mapToInt(Match::getRound).max().orElse(0);
+        int nextHomeRound = maxRound + 1;
+        int nextReturnRound = maxRound + 2;
 
         List<Match> created = new ArrayList<>();
         for (int i = 0; i < winners.size(); i += 2) {
@@ -308,7 +335,7 @@ public class MatchGenerationService {
                 created.add(persistMatch(phase, null, nextReturnRound, tieId, away, home, MatchType.REGULAR));
             }
         }
-        if (isFinalRound && finalLoserA != null && finalLoserB != null) {
+        if (withThirdPlace && finalLoserA != null && finalLoserB != null) {
             UUID tieId = UUID.randomUUID();
             created.add(persistMatch(phase, null, nextHomeRound, tieId, finalLoserA, finalLoserB, MatchType.THIRD_PLACE));
             if (twoLegged) {

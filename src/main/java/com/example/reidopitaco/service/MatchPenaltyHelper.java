@@ -21,9 +21,11 @@ import java.util.List;
 public class MatchPenaltyHelper {
 
     private final MatchRepository matchRepository;
+    private final MatchLegModeResolver legModeResolver;
 
-    public MatchPenaltyHelper(MatchRepository matchRepository) {
+    public MatchPenaltyHelper(MatchRepository matchRepository, MatchLegModeResolver legModeResolver) {
         this.matchRepository = matchRepository;
+        this.legModeResolver = legModeResolver;
     }
 
     /** Dados de pênalti de uma partida, orientados a ela. */
@@ -31,15 +33,16 @@ public class MatchPenaltyHelper {
     }
 
     /**
-     * Resolve os dados para o {@code MatchResponse}. Só consulta o banco (pernas do confronto)
-     * quando a fase é KNOCKOUT TWO_LEGGED; em jogo único e fora de mata-mata decide sem query.
+     * Resolve os dados para o {@code MatchResponse}. Usa o modo de pernas <b>efetivo</b> do
+     * confronto ({@link MatchLegModeResolver} — a rodada final pode ter modo próprio); em jogo
+     * único efetivo e fora de mata-mata decide sem carregar as pernas.
      */
     public PenaltyInfo resolve(Match match) {
         var phase = match.getPhase();
         if (phase.getPhaseType() != TournamentPhaseType.KNOCKOUT) {
             return new PenaltyInfo(false, 0, 0);
         }
-        if (phase.getMatchLegMode() == MatchLegMode.SINGLE) {
+        if (legModeResolver.effectiveLegMode(match) == MatchLegMode.SINGLE) {
             return new PenaltyInfo(true, 0, 0);
         }
         List<Match> legs = matchRepository.findAllByTieId(match.getTieId());
@@ -48,15 +51,15 @@ public class MatchPenaltyHelper {
     }
 
     /**
-     * Um empate neste confronto pode ir aos pênaltis no palpite: jogo único de KO, ou a perna de
-     * volta (maior {@code round}) de um confronto de ida-e-volta. {@code legs} = pernas do tie.
+     * Um empate neste confronto pode ir aos pênaltis no palpite: jogo único (efetivo) de KO, ou a
+     * perna de volta (maior {@code round}) de um confronto de ida-e-volta. {@code legs} = pernas.
      */
     public boolean isEligible(Match match, List<Match> legs) {
         var phase = match.getPhase();
         if (phase.getPhaseType() != TournamentPhaseType.KNOCKOUT) {
             return false;
         }
-        if (phase.getMatchLegMode() == MatchLegMode.SINGLE) {
+        if (legModeResolver.effectiveLegMode(match) == MatchLegMode.SINGLE) {
             return true;
         }
         if (legs.size() < 2) {

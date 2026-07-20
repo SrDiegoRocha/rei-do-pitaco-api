@@ -50,6 +50,7 @@ public class PredictionService {
     private final PredictionMapper mapper;
     private final TieAggregateCalculator tieCalculator;
     private final MatchPenaltyHelper penaltyHelper;
+    private final MatchLegModeResolver legModeResolver;
 
     public PredictionService(
             TournamentRepository tournamentRepository,
@@ -59,7 +60,8 @@ public class PredictionService {
             UserRepository userRepository,
             PredictionMapper mapper,
             TieAggregateCalculator tieCalculator,
-            MatchPenaltyHelper penaltyHelper
+            MatchPenaltyHelper penaltyHelper,
+            MatchLegModeResolver legModeResolver
     ) {
         this.tournamentRepository = tournamentRepository;
         this.memberRepository = memberRepository;
@@ -69,6 +71,7 @@ public class PredictionService {
         this.mapper = mapper;
         this.tieCalculator = tieCalculator;
         this.penaltyHelper = penaltyHelper;
+        this.legModeResolver = legModeResolver;
     }
 
     @Transactional
@@ -447,7 +450,7 @@ public class PredictionService {
         if (phase.getPhaseType() != TournamentPhaseType.KNOCKOUT) {
             return null;
         }
-        if (phase.getMatchLegMode() == MatchLegMode.SINGLE) {
+        if (legModeResolver.effectiveLegMode(match) == MatchLegMode.SINGLE) {
             if (match.getHomePenalties() == null || match.getAwayPenalties() == null) {
                 return null;
             }
@@ -489,8 +492,9 @@ public class PredictionService {
      */
     private void validatePredictionCascade(Match match, PlacePredictionRequest request) {
         TournamentPhase phase = match.getPhase();
+        // Modo efetivo do confronto: a rodada final de um KO pode ter modo próprio (finalLegMode).
         boolean singleLegKo = phase.getPhaseType() == TournamentPhaseType.KNOCKOUT
-                && phase.getMatchLegMode() == MatchLegMode.SINGLE;
+                && legModeResolver.effectiveLegMode(match) == MatchLegMode.SINGLE;
 
         Integer etHome = request.homeExtraTimeScore();
         Integer etAway = request.awayExtraTimeScore();

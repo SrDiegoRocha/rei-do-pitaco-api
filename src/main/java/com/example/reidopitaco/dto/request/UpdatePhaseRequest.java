@@ -13,6 +13,9 @@ public record UpdatePhaseRequest(
         @NotNull MatchLegMode matchLegMode,
         @NotNull MatchGenerationMode matchGenerationMode,
         Boolean playsInsideGroupOnly,
-        Boolean hasThirdPlace
+        Boolean hasThirdPlace,
+        // Modo de pernas da rodada final (final + 3º lugar). Opcional, só em KNOCKOUT;
+        // null = herda o matchLegMode da fase.
+        MatchLegMode finalLegMode
 ) {
 }
