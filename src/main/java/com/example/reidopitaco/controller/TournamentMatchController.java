@@ -31,4 +31,15 @@ public class TournamentMatchController {
                 matchService.listByTournament(UUID.fromString(requesterPublicId), tournamentId)
         );
     }
+
+    @GetMapping("/tie/{tieId}")
+    public ResponseEntity<List<MatchResponse>> listByTie(
+            @AuthenticationPrincipal String requesterPublicId,
+            @PathVariable UUID tournamentId,
+            @PathVariable UUID tieId
+    ) {
+        return ResponseEntity.ok(
+                matchService.listByTie(UUID.fromString(requesterPublicId), tournamentId, tieId)
+        );
+    }
 }

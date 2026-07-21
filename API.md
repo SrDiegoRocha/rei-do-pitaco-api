@@ -996,6 +996,26 @@ Erros:
 
 ---
 
+### `GET /api/tournaments/{tournamentId}/matches/tie/{tieId}` → 200 `MatchResponse[]`
+
+> **Atenção ao path**: nível **torneio**, sem `/phases/{pid}`. Busca as partidas de um confronto pelo `tieId`.
+
+Retorna as pernas do confronto identificado por `tieId`, ordenadas por `round` ASC (ida antes da volta):
+
+- Phase em `matchLegMode = SINGLE`: **1** partida (cada match tem um `tieId` próprio auto-gerado).
+- Phase em `matchLegMode = TWO_LEGGED`: **2** partidas (ida no menor `round`, volta no maior), compartilhando o mesmo `tieId`.
+
+Escopado pelo torneio: um `tieId` que não pertença a este torneio devolve **lista vazia** `[]` (não vaza a existência de ties de outros torneios). Sem paginação, mesmo formato `MatchResponse` dos demais endpoints de partida.
+
+Acesso: aplica o controle de visibilidade do torneio (owner, member ACTIVE, ou PUBLIC não-DRAFT). Mesmo padrão de `GET /ranking` e do list por torneio/phase.
+
+Erros:
+- **404** `Tournament not found` — torneio inexistente, soft-deletado, ou inacessível para o requester.
+
+Útil pra montar a visão agregada de um confronto de ida-e-volta ("Flamengo 3x2 Palmeiras no agregado") a partir do `tieId` que já vem no `MatchResponse` e no bracket.
+
+---
+
 ## 14.1 Feed pessoal de partidas (`/api/users/me/matches`)
 
 Tela inicial do app: lista **todas as partidas de todos os torneios em que o usuário participa**, em ordem cronológica, para um único scroll vertical centrado no "hoje" (rolar pra cima → partidas passadas; pra baixo → partidas futuras).

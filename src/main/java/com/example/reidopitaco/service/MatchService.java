@@ -147,6 +147,24 @@ public class MatchService {
                 .toList();
     }
 
+    /**
+     * Lista as pernas de um confronto pelo {@code tieId}, dentro de um torneio. Em SINGLE
+     * devolve 1 partida; em TWO_LEGGED devolve as 2 pernas ordenadas por rodada (ida, volta).
+     * Lista vazia se o tieId não existir naquele torneio.
+     */
+    @Transactional(readOnly = true)
+    public List<MatchResponse> listByTie(
+            UUID requesterPublicId,
+            UUID tournamentPublicId,
+            UUID tieId
+    ) {
+        accessGuard.requireViewable(requesterPublicId, tournamentPublicId);
+        return matchRepository.findAllByTieIdAndTournamentPublicId(tieId, tournamentPublicId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public MatchResponse getById(
             UUID requesterPublicId,

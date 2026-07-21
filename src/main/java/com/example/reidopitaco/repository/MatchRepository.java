@@ -193,6 +193,26 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     List<Match> findAllByTieId(UUID tieId);
 
+    /**
+     * Pernas de um confronto ({@code tieId}) dentro de um torneio, ordenadas por rodada
+     * (ida antes da volta). Escopado pelo torneio para não vazar ties de outros torneios;
+     * faz fetch de times/grupo para o mapper montar o {@code MatchResponse} sem N+1.
+     */
+    @Query("""
+            SELECT m FROM Match m
+            JOIN m.phase p
+            JOIN FETCH m.homeTeam
+            JOIN FETCH m.awayTeam
+            LEFT JOIN FETCH m.group
+            WHERE m.tieId = :tieId
+              AND p.tournament.publicId = :tournamentPublicId
+            ORDER BY m.round ASC, m.createdAt ASC
+            """)
+    List<Match> findAllByTieIdAndTournamentPublicId(
+            @Param("tieId") UUID tieId,
+            @Param("tournamentPublicId") UUID tournamentPublicId
+    );
+
     long countByPhaseId(Long phaseId);
 
     long countByGroupId(Long groupId);
