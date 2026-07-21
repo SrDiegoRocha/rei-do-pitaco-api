@@ -67,7 +67,9 @@ public class BracketService {
 
         List<Match> matches = matchRepository.findAllByPhasePublicId(phasePublicId);
         if (matches.isEmpty()) {
-            return new BracketResponse(phasePublicId, phase.getName(), List.of());
+            return new BracketResponse(
+                    phasePublicId, phase.getName(), phase.getEffectiveBracketMode(), List.of()
+            );
         }
 
         // Agrupa as pernas por confronto (tieId).
@@ -113,7 +115,7 @@ public class BracketService {
             rounds.add(new BracketResponse.BracketRound(i + 1, labelForRound(expectedTies, i + 1), tieDtos));
         }
 
-        return new BracketResponse(phasePublicId, phase.getName(), rounds);
+        return new BracketResponse(phasePublicId, phase.getName(), phase.getEffectiveBracketMode(), rounds);
     }
 
     private BracketResponse.BracketTie toTieDto(TieData tie) {

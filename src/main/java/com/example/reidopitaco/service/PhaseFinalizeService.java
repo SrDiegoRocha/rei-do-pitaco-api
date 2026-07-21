@@ -46,6 +46,7 @@ public class PhaseFinalizeService {
     private final MatchRepository matchRepository;
     private final TeamRepository teamRepository;
     private final StandingsService standingsService;
+    private final KnockoutRankingService knockoutRankingService;
     private final PhasePredictionScoringService phasePredictionScoringService;
 
     public PhaseFinalizeService(
@@ -57,6 +58,7 @@ public class PhaseFinalizeService {
             MatchRepository matchRepository,
             TeamRepository teamRepository,
             StandingsService standingsService,
+            KnockoutRankingService knockoutRankingService,
             PhasePredictionScoringService phasePredictionScoringService
     ) {
         this.tournamentRepository = tournamentRepository;
@@ -67,6 +69,7 @@ public class PhaseFinalizeService {
         this.matchRepository = matchRepository;
         this.teamRepository = teamRepository;
         this.standingsService = standingsService;
+        this.knockoutRankingService = knockoutRankingService;
         this.phasePredictionScoringService = phasePredictionScoringService;
     }
 
@@ -83,7 +86,11 @@ public class PhaseFinalizeService {
 
         ensureAllMatchesResolved(phase);
 
-        StandingsResponse standings = standingsService.computeFor(tournament, phasePublicId);
+        // Em KNOCKOUT a "classificação" é o ranking do mata-mata (vivos primeiro, eliminados por
+        // profundidade) — tabela de liga ranquearia errado confronto decidido nos pênaltis.
+        StandingsResponse standings = phase.getPhaseType() == TournamentPhaseType.KNOCKOUT
+                ? knockoutRankingService.computeFor(tournament, phase)
+                : standingsService.computeFor(tournament, phasePublicId);
         List<TournamentZone> zones = zoneRepository.findAllByPhaseIdOrderByPositionAsc(phase.getId());
 
         Set<UUID> alreadySeededPhases = new HashSet<>();

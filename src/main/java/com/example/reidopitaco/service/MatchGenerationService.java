@@ -7,6 +7,7 @@ import com.example.reidopitaco.entity.PhaseTeam;
 import com.example.reidopitaco.entity.Team;
 import com.example.reidopitaco.entity.Tournament;
 import com.example.reidopitaco.entity.TournamentPhase;
+import com.example.reidopitaco.enums.BracketMode;
 import com.example.reidopitaco.enums.MatchGenerationMode;
 import com.example.reidopitaco.enums.MatchLegMode;
 import com.example.reidopitaco.enums.MatchStatus;
@@ -211,9 +212,18 @@ public class MatchGenerationService {
         List<Team> teams = phaseTeamRepository.findAllByPhasePublicId(phase.getPublicId())
                 .stream().map(PhaseTeam::getTeam).collect(java.util.stream.Collectors.toCollection(ArrayList::new));
         int n = teams.size();
-        if (!isPowerOfTwo(n)) {
+        // Chaveamento fixo exige a árvore completa (potência de 2). Sem chaveamento
+        // (REDRAW_EACH_ROUND) basta ser par — cada rodada é sorteada de novo, então a fase pode
+        // começar com 24, 40... times (as rodadas seguintes exigem nº par de vencedores).
+        if (phase.getEffectiveBracketMode() == BracketMode.FIXED_BRACKET) {
+            if (!isPowerOfTwo(n)) {
+                throw new MatchGenerationException(
+                        "KNOCKOUT requires a power of 2 of teams (got " + n + ")"
+                );
+            }
+        } else if (n % 2 != 0) {
             throw new MatchGenerationException(
-                    "KNOCKOUT requires a power of 2 of teams (got " + n + ")"
+                    "KNOCKOUT with REDRAW_EACH_ROUND requires an even number of teams (got " + n + ")"
             );
         }
         if (n < 2) {
@@ -246,7 +256,8 @@ public class MatchGenerationService {
      * round do confronto) — robusta a modos de perna mistos, já que a rodada final pode ter modo
      * próprio ({@code finalLegMode}), que vale também para a disputa de 3º lugar. A ordem dos
      * vencedores é a canônica do bracket (criação da 1ª perna): o vencedor do confronto {@code 2j}
-     * enfrenta o do {@code 2j+1}.
+     * enfrenta o do {@code 2j+1}. Em {@code REDRAW_EACH_ROUND}, os vencedores passam por um novo
+     * sorteio (shuffle) antes do emparelhamento — cada rodada tem seu proprio sorteio.
      */
     private List<Match> generateKnockoutNextRound(TournamentPhase phase, List<Match> existing) {
         // Agrupa por confronto; só REGULAR conta para vencedores/rodadas (a disputa de 3º lugar
@@ -300,6 +311,13 @@ public class MatchGenerationService {
             throw new MatchGenerationException(
                     "KNOCKOUT requires an even number of winners to pair (got " + winners.size() + ")"
             );
+        }
+
+        // Sem chaveamento (REDRAW_EACH_ROUND): os vencedores são sorteados de novo a cada rodada
+        // — quem joga contra quem sai deste shuffle, não da posição na árvore. Com chaveamento
+        // fixo, a ordem canônica acima é mantida (vencedor do confronto 2j × 2j+1).
+        if (phase.getEffectiveBracketMode() == BracketMode.REDRAW_EACH_ROUND) {
+            Collections.shuffle(winners, random);
         }
 
         // A próxima rodada é a final quando restam exatamente 2 vencedores — ela (e o 3º lugar)

@@ -1,5 +1,6 @@
 package com.example.reidopitaco.dto.response;
 
+import com.example.reidopitaco.enums.BracketMode;
 import com.example.reidopitaco.enums.PickemState;
 import com.example.reidopitaco.enums.TournamentPhaseType;
 
@@ -67,6 +68,10 @@ public record PhasePredictionTemplateResponse(
      */
     public record BracketTemplate(
             boolean hasThirdPlace,
+            // FIXED_BRACKET: a árvore prevista segue o chaveamento real. REDRAW_EACH_ROUND: os
+            // confrontos reais das rodadas > 1 são sorteados — o palpite continua sendo a árvore
+            // do usuário, mas vale avisar que o emparelhamento real será sorteado.
+            BracketMode bracketMode,
             int totalRounds,
             List<TemplateRound> rounds
     ) {

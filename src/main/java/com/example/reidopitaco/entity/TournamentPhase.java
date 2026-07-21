@@ -1,5 +1,6 @@
 package com.example.reidopitaco.entity;
 
+import com.example.reidopitaco.enums.BracketMode;
 import com.example.reidopitaco.enums.MatchGenerationMode;
 import com.example.reidopitaco.enums.MatchLegMode;
 import com.example.reidopitaco.enums.TournamentPhaseType;
@@ -76,6 +77,14 @@ public class TournamentPhase {
     @Column(name = "match_generation_mode", nullable = false, length = 15)
     private MatchGenerationMode matchGenerationMode;
 
+    /**
+     * Chaveamento fixo vs sorteio por rodada. Só se aplica a fases KNOCKOUT ({@code null} nas
+     * demais). Ver {@link #getEffectiveBracketMode()} para o valor resolvido.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "bracket_mode", length = 20)
+    private BracketMode bracketMode;
+
     @Column(name = "plays_inside_group_only")
     private Boolean playsInsideGroupOnly;
 
@@ -104,5 +113,23 @@ public class TournamentPhase {
     @PreUpdate
     void onUpdate() {
         updatedAt = Instant.now();
+    }
+
+    /**
+     * Modo de chaveamento resolvido da fase. {@code null} fora de KNOCKOUT. Quando a coluna está
+     * vazia (fase criada antes da feature por cliente antigo), o fallback preserva o comportamento
+     * histórico: geração AUTOMATIC sempre emparelhou em ordem canônica (chaveamento fixo) e fases
+     * MANUAL eram livres (sem chaveamento).
+     */
+    public BracketMode getEffectiveBracketMode() {
+        if (phaseType != TournamentPhaseType.KNOCKOUT) {
+            return null;
+        }
+        if (bracketMode != null) {
+            return bracketMode;
+        }
+        return matchGenerationMode == MatchGenerationMode.MANUAL
+                ? BracketMode.REDRAW_EACH_ROUND
+                : BracketMode.FIXED_BRACKET;
     }
 }

@@ -603,6 +603,7 @@ export interface PhaseResponse {
   hasThirdPlace: boolean;                // só relevante em KNOCKOUT
   finalLegMode: MatchLegMode | null;     // só em KNOCKOUT: modo da RODADA FINAL (final + 3º lugar);
                                          // null = herda o matchLegMode da fase
+  bracketMode: BracketMode | null;       // só em KNOCKOUT (resolvido, nunca null em KO); null nas demais
   groupCount: number;
   teamCount: number;
   finalizedAt: string | null;            // ISO instant; null = fase ainda não finalizada
@@ -614,6 +615,16 @@ export interface PhaseResponse {
 `finalizedAt` é preenchido quando a fase passa pelo `POST .../finalize` com sucesso (e re-escrito se o finalize rodar de novo). Use-o para distinguir "pronta pra finalizar" de "já finalizada": esconder o botão de finalizar, mostrar banner "Fase finalizada em {data}", e travar criação/geração de partidas na UI.
 
 **`finalLegMode`** (novo): em fases `KNOCKOUT`, o admin pode escolher se a **final** é jogo único ou ida-e-volta, independentemente do `matchLegMode` da fase. A escolha vale também para a **disputa de 3º lugar** (mesma rodada). `null` = a final segue o `matchLegMode` normal. Com 2 times na fase (a 1ª rodada já é a final), o `finalLegMode` se aplica desde a 1ª rodada. Nas partidas, o modo **efetivo** de cada confronto vem em `MatchResponse.matchLegMode` (§14) — use-o no lugar do modo da fase para decidir o formulário de prorrogação/pênaltis.
+
+**`bracketMode`** (NOVO — ver `CHAVEAMENTO.md` para o guia completo): em fases `KNOCKOUT`, o admin escolhe entre **chaveamento fixo** e **sorteio a cada rodada**:
+
+```ts
+export type BracketMode = 'FIXED_BRACKET' | 'REDRAW_EACH_ROUND';
+```
+
+- `FIXED_BRACKET` — o sorteio da 1ª rodada define a árvore inteira (vencedor do confronto `2j` enfrenta o do `2j+1`). A geração automática segue a árvore e a criação/edição **manual** de partidas é validada contra ela (novos 409 na §14).
+- `REDRAW_EACH_ROUND` — sem chaveamento: a cada rodada os vencedores são **sorteados de novo** (estilo fases iniciais da Copa do Brasil). A geração embaralha os vencedores; montagem manual livre.
+- No request é opcional: omitido/`null`, o default é `FIXED_BRACKET` em `AUTOMATIC` e `REDRAW_EACH_ROUND` em `MANUAL` (preserva o comportamento antigo de cada modo). **Front novo: envie sempre explícito.** Fases KNOCKOUT pré-existentes foram backfilladas com essa mesma regra (migration V30).
 
 ### `POST /api/tournaments/{tournamentId}/phases` → 201
 
@@ -628,6 +639,7 @@ export interface CreatePhaseRequest {
   playsInsideGroupOnly?: boolean | null;         // só usado em GROUPS
   hasThirdPlace?: boolean | null;                // só usado em KNOCKOUT
   finalLegMode?: MatchLegMode | null;            // só usado em KNOCKOUT; null = herda matchLegMode
+  bracketMode?: BracketMode | null;              // só usado em KNOCKOUT; null = default por matchGenerationMode
 }
 ```
 
@@ -906,6 +918,15 @@ Validações cruzadas (todas retornam **409**):
 - `a tie can have at most two legs`
 - `THIRD_PLACE matches are only allowed in KNOCKOUT phases`
 
+**Validação de chaveamento (NOVO — só em KNOCKOUT com `bracketMode = FIXED_BRACKET`, ver §10 e `CHAVEAMENTO.md`).** A 1ª rodada é livre (ela define o chaveamento); nas seguintes, cada time precisa ser vencedor da rodada anterior e o par precisa respeitar a adjacência da árvore (vencedor do confronto `2j` × vencedor do `2j+1`; orientação mandante/visitante livre). Em `REDRAW_EACH_ROUND` nada disso se aplica — montagem manual livre. Erros (todos **409**, mensagens com os nomes dos times):
+
+- `home/away team 'X' did not come from the previous round; a fixed bracket does not allow new teams to enter mid-phase`
+- `home/away team 'X' did not win their previous-round tie and cannot advance in a fixed bracket`
+- `Previous-round tie 'A x B' has no winner yet; finish it (or set penalties) before scheduling the next round`
+- `This match violates the fixed bracket: the winner of 'A x B' must face the winner of 'C x D'`
+- `THIRD_PLACE match must pair the losers of the two semifinal ties ('X' and 'Y')` / `Semifinal ties must be decided before creating the THIRD_PLACE match` / `THIRD_PLACE match requires exactly 2 semifinal ties in the previous round (found N)`
+- `The bracket already has a champion; no further matches can be created`
+
 ### `GET /api/tournaments/{tid}/phases/{pid}/matches` → 200 `MatchResponse[]`
 
 Query opcional:
@@ -932,6 +953,8 @@ export interface UpdateMatchRequest {
 ```
 
 > Note: `tieId` **não** é editável após criação.
+
+O PUT re-valida tudo que o POST valida, incluindo (NOVO): a **consistência com a outra perna** do mesmo `tieId` (times invertidos, rodadas distintas — para trocar o par de um confronto com 2 pernas, delete e recrie) e a **validação de chaveamento** em fase `FIXED_BRACKET` (mesmos 409 acima).
 
 ### `PUT /api/tournaments/{tid}/phases/{pid}/matches/{matchId}/result` → 200
 
@@ -1144,7 +1167,9 @@ Owner-only. Sem body.
 
 **Algoritmo**:
 - `ROUND_ROBIN`/`GROUPS`: algoritmo de círculo (Berger). Shuffle inicial com `SecureRandom`, bye para N ímpar, `N-1` rodadas em `SINGLE` e `2*(N-1)` em `TWO_LEGGED` (ida e volta com `tieId` comum). Em `GROUPS`, executa por grupo.
-- `KNOCKOUT`: requer **potência de 2** de times na primeira chamada (**409** `KNOCKOUT requires a power of 2 of teams (got N)`). Emparelha 1×último, 2×penúltimo, etc. Chamadas seguintes detectam vencedores da rodada anterior (single ou agregado em TWO_LEGGED) e geram a próxima, **em ordem canônica do bracket** (vencedor do confronto `2j` enfrenta o do `2j+1`).
+- `KNOCKOUT`: depende do **`bracketMode`** da fase (§10):
+  - `FIXED_BRACKET`: requer **potência de 2** de times na primeira chamada (**409** `KNOCKOUT requires a power of 2 of teams (got N)`). Emparelha 1×último, 2×penúltimo, etc. Chamadas seguintes detectam vencedores da rodada anterior (single ou agregado em TWO_LEGGED) e geram a próxima, **em ordem canônica do bracket** (vencedor do confronto `2j` enfrenta o do `2j+1`).
+  - `REDRAW_EACH_ROUND`: a primeira chamada exige apenas quantidade **PAR** de times (**409** `KNOCKOUT with REDRAW_EACH_ROUND requires an even number of teams (got N)` se ímpar) — pode gerar com 6, 24, 40... Chamadas seguintes **sorteiam de novo** os vencedores antes de emparelhar (cada `generate` é um sorteio). Nº ímpar de vencedores → **409** `KNOCKOUT requires an even number of winners to pair (got N)`.
 - `hasThirdPlace=true` em KNOCKOUT: quando estiver gerando a rodada final, cria também a disputa de 3º lugar entre os 2 perdedores das semifinais.
 - **`finalLegMode` (§10)**: a **rodada final** (final + 3º lugar) é gerada com o modo próprio configurado — ex.: fase `SINGLE` com final `TWO_LEGGED` gera 2 pernas para a final (e para o 3º), fase `TWO_LEGGED` com final `SINGLE` gera 1 jogo só. Com 2 times na fase, vale já na 1ª rodada (que é a final).
 
@@ -1219,6 +1244,7 @@ Acesso: aplica o controle de visibilidade do torneio (owner, member ACTIVE, ou P
 export interface BracketResponse {
   phaseId: string;
   phaseName: string;
+  bracketMode: BracketMode;   // NOVO (§10) — use para decidir a renderização (árvore vs lista de rodadas)
   rounds: BracketRound[];     // ordenadas da primeira rodada do mata-mata até a final
 }
 
@@ -1249,6 +1275,7 @@ Exclusivo de phase `KNOCKOUT`. Monta a árvore de confrontos a partir dos matche
 
 - `winner` fica `null` enquanto o confronto não tiver desfecho: pernas pendentes, ou empate no agregado **sem pênaltis lançados**. Para desempatar, o owner lança os pênaltis no `setResult` (ver §14).
 - Quando a phase tem `hasThirdPlace`, a última rodada contém dois confrontos: a final e a disputa de 3º lugar (`thirdPlace: true`). O flag vem do `matchType` persistido da partida — sempre confiável. A final aparece antes do 3º lugar.
+- **`bracketMode` (NOVO)**: em `FIXED_BRACKET`, renderize a árvore como hoje (o vencedor do confronto `2j` alimenta o slot `j` da rodada seguinte junto com o do `2j+1`). Em `REDRAW_EACH_ROUND` **não desenhe linhas de ligação** — os confrontos de cada rodada saem de um novo sorteio; renderize como lista de rodadas. Ver `CHAVEAMENTO.md`.
 - Phase sem matches retorna `rounds: []`.
 - Em phase `ROUND_ROBIN`/`GROUPS` retorna **409** `Bracket is only available for KNOCKOUT phases; use /standings`.
 
@@ -1262,12 +1289,15 @@ Owner-only. Processa as zones da phase e materializa os times classificados como
 - Todos os matches resolvidos (`COMPLETED` ou `CANCELLED`, sem `SCHEDULED`): `Phase has N unfinished matches`.
 - Pelo menos 1 match: `Phase has no matches to finalize`.
 - `nextPhase` da zone não pode já ter times: `Next phase 'X' already has teams; cannot finalize` (idempotência).
+- **Fase KNOCKOUT (NOVO)**: todo confronto disputado precisa de vencedor — `Tie 'A x B' has no winner (draw on aggregate); set penalties to resolve it before finalizing` (variante `Third-place tie ...`).
 
 **Processamento**:
 - Zonas em ordem de `position`.
 - `selectionMode = ALL`: pega times nas posições `[fromPosition, toPosition]` de cada grupo e cria `PhaseTeam` no `nextPhase`.
 - `selectionMode = BEST_RANKED`: junta os times da posição `fromPosition` de **todos os grupos**, ranqueia (pontos → vitórias → saldo → gols pró → menos derrotas → nome) e leva os top `bestRankedCount`.
 - Zone com `nextPhase = null` → times daquela faixa caem no vácuo.
+
+**Fase KNOCKOUT (NOVO — ver `CHAVEAMENTO.md` §5)**: as posições vêm de um **ranking de mata-mata**, não de tabela de liga — prorrogação e pênaltis decidem quem avançou. Ordem: times **vivos** (venceram seu último confronto) primeiro, do estágio mais fundo para o mais raso; depois eliminados, idem (vice → perdedores das semis → das quartas...; vencedor da disputa de 3º antes do perdedor). Dentro do estágio, ordem canônica do bracket. O response é o mesmo `StandingsResponse` (bloco único com `groupId/groupName = null`); os contadores (J/V/E/D/gols/pontos) são informativos (placar do tempo normal — confronto decidido nos pênaltis conta como empate nos contadores, mas a posição reflete quem passou). Com isso, zonas `ALL` funcionam em fase KO — ex.: `1–16 → próxima fase` leva os 16 sobreviventes (`BEST_RANKED` continua exclusiva de GROUPS). Confronto totalmente cancelado elimina os dois times. `GET .../standings` de fase KO continua **409** — o ranking existe para o finalize, não como tela.
 
 ---
 
@@ -1771,6 +1801,8 @@ export interface GroupBlock {
 
 export interface BracketTemplate {
   hasThirdPlace: boolean;
+  bracketMode: BracketMode;            // NOVO (§10): em REDRAW_EACH_ROUND, avise que os confrontos
+                                       // reais das rodadas > 1 serão sorteados (o palpite segue igual)
   totalRounds: number;
   rounds: TemplateRound[];             // rodada 1 com os confrontos reais; seguintes com slots vazios
 }
@@ -1799,6 +1831,8 @@ export interface TemplateSlot {
 **`stateReason`** (só em `NOT_READY`): `TOURNAMENT_NOT_IN_PROGRESS`, `NO_TEAMS`, `NO_GROUPS`, `TEAMS_NOT_ASSIGNED_TO_GROUPS`, `NO_QUALIFICATION_ZONES` (fase sem zona com `nextPhase` — sem faixa de classificação não há o que prever), `BRACKET_NOT_GENERATED` (KO sem a 1ª rodada gerada).
 
 **Como montar a árvore do KO no front:** a rodada 1 vem fixa (pares reais). O vencedor escolhido no slot `2j` alimenta o `homeTeam` e o do slot `2j+1` o `awayTeam` do slot `j` da rodada seguinte. Se `hasThirdPlace`, renderize um slot extra `THIRD_PLACE` na rodada final (slotIndex 0) com os perdedores previstos das semifinais.
+
+Em `bracketMode = REDRAW_EACH_ROUND` a montagem do palpite é **a mesma** (o usuário preenche a árvore prevista dele), e a pontuação já casa os confrontos por rodada e por times (não pela posição do slot) — só exiba um aviso de que os cruzamentos reais serão sorteados a cada rodada. Ver `CHAVEAMENTO.md` §8.
 
 ### 20.2 `PUT .../pickem/me` → 200 (upsert)
 

@@ -8,6 +8,8 @@ import com.example.reidopitaco.entity.PhaseTeam;
 import com.example.reidopitaco.entity.Tournament;
 import com.example.reidopitaco.entity.TournamentPhase;
 import com.example.reidopitaco.entity.TournamentTeam;
+import com.example.reidopitaco.enums.BracketMode;
+import com.example.reidopitaco.enums.MatchGenerationMode;
 import com.example.reidopitaco.enums.TournamentPhaseType;
 import com.example.reidopitaco.enums.TournamentStatus;
 import com.example.reidopitaco.exception.NotTournamentOwnerException;
@@ -85,6 +87,9 @@ public class PhaseService {
                                 ? request.finalLegMode()
                                 : null
                 )
+                .bracketMode(resolveBracketMode(
+                        request.phaseType(), request.matchGenerationMode(), request.bracketMode()
+                ))
                 .build();
 
         TournamentPhase saved = phaseRepository.save(phase);
@@ -142,6 +147,9 @@ public class PhaseService {
                         ? request.finalLegMode()
                         : null
         );
+        phase.setBracketMode(resolveBracketMode(
+                request.phaseType(), request.matchGenerationMode(), request.bracketMode()
+        ));
 
         return toResponse(phaseRepository.saveAndFlush(phase));
     }
@@ -230,6 +238,27 @@ public class PhaseService {
         return phaseRepository
                 .findByPublicIdAndTournamentPublicId(phasePublicId, tournament.getPublicId())
                 .orElseThrow(PhaseNotFoundException::new);
+    }
+
+    /**
+     * Chaveamento só existe em KNOCKOUT ({@code null} nas demais). Quando o cliente não manda o
+     * campo, o default preserva o comportamento histórico de cada modo de geração: AUTOMATIC
+     * sempre emparelhou em ordem canônica (chaveamento fixo); MANUAL era livre (sem chaveamento).
+     */
+    private BracketMode resolveBracketMode(
+            TournamentPhaseType phaseType,
+            MatchGenerationMode generationMode,
+            BracketMode requested
+    ) {
+        if (phaseType != TournamentPhaseType.KNOCKOUT) {
+            return null;
+        }
+        if (requested != null) {
+            return requested;
+        }
+        return generationMode == MatchGenerationMode.MANUAL
+                ? BracketMode.REDRAW_EACH_ROUND
+                : BracketMode.FIXED_BRACKET;
     }
 
     private void autoPopulateFromTournamentTeams(TournamentPhase phase) {

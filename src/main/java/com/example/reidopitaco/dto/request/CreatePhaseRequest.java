@@ -1,5 +1,6 @@
 package com.example.reidopitaco.dto.request;
 
+import com.example.reidopitaco.enums.BracketMode;
 import com.example.reidopitaco.enums.MatchGenerationMode;
 import com.example.reidopitaco.enums.MatchLegMode;
 import com.example.reidopitaco.enums.TournamentPhaseType;
@@ -16,6 +17,9 @@ public record CreatePhaseRequest(
         Boolean hasThirdPlace,
         // Modo de pernas da rodada final (final + 3º lugar). Opcional, só em KNOCKOUT;
         // null = herda o matchLegMode da fase.
-        MatchLegMode finalLegMode
+        MatchLegMode finalLegMode,
+        // Chaveamento fixo vs sorteio por rodada. Opcional, só em KNOCKOUT; null = default
+        // (FIXED_BRACKET em AUTOMATIC, REDRAW_EACH_ROUND em MANUAL).
+        BracketMode bracketMode
 ) {
 }

@@ -49,6 +49,7 @@ public class MatchService {
     private final MatchLegModeResolver legModeResolver;
     private final TournamentAccessGuard accessGuard;
     private final MatchNotificationService matchNotificationService;
+    private final BracketIntegrityValidator bracketIntegrityValidator;
 
     public MatchService(
             TournamentRepository tournamentRepository,
@@ -61,7 +62,8 @@ public class MatchService {
             PhasePredictionScoringService phasePredictionScoringService,
             MatchLegModeResolver legModeResolver,
             TournamentAccessGuard accessGuard,
-            MatchNotificationService matchNotificationService
+            MatchNotificationService matchNotificationService,
+            BracketIntegrityValidator bracketIntegrityValidator
     ) {
         this.tournamentRepository = tournamentRepository;
         this.phaseRepository = phaseRepository;
@@ -74,6 +76,7 @@ public class MatchService {
         this.legModeResolver = legModeResolver;
         this.accessGuard = accessGuard;
         this.matchNotificationService = matchNotificationService;
+        this.bracketIntegrityValidator = bracketIntegrityValidator;
     }
 
     @Transactional
@@ -101,8 +104,13 @@ public class MatchService {
 
         UUID tieId = request.tieId() != null ? request.tieId() : UUID.randomUUID();
         if (request.tieId() != null) {
-            validateTieConsistency(request.tieId(), phase, home.getTeam(), away.getTeam(), request.round());
+            validateTieConsistency(request.tieId(), phase, home.getTeam(), away.getTeam(), request.round(), null);
         }
+
+        MatchType matchType = resolveMatchType(phase, request.matchType());
+        bracketIntegrityValidator.validate(
+                phase, home.getTeam(), away.getTeam(), request.round(), request.tieId(), matchType, null
+        );
 
         Match match = Match.builder()
                 .phase(phase)
@@ -113,7 +121,7 @@ public class MatchService {
                 .awayTeam(away.getTeam())
                 .scheduledAt(request.scheduledAt())
                 .status(MatchStatus.SCHEDULED)
-                .matchType(resolveMatchType(phase, request.matchType()))
+                .matchType(matchType)
                 .build();
         return mapper.toResponse(matchRepository.save(match));
     }
@@ -223,6 +231,17 @@ public class MatchService {
         ensureTeamFreeInRound(phase, request.round(), home.getTeam().getId(), match.getId());
         ensureTeamFreeInRound(phase, request.round(), away.getTeam().getId(), match.getId());
 
+        // Editar uma perna não pode quebrar o confronto: os times precisam continuar invertidos
+        // em relação à outra perna do mesmo tieId (para trocar o par, delete e recrie o confronto).
+        validateTieConsistency(
+                match.getTieId(), phase, home.getTeam(), away.getTeam(), request.round(), match.getId()
+        );
+
+        MatchType matchType = resolveMatchType(phase, request.matchType());
+        bracketIntegrityValidator.validate(
+                phase, home.getTeam(), away.getTeam(), request.round(), match.getTieId(), matchType, match.getId()
+        );
+
         var previousScheduledAt = match.getScheduledAt();
 
         match.setRound(request.round());
@@ -230,7 +249,7 @@ public class MatchService {
         match.setHomeTeam(home.getTeam());
         match.setAwayTeam(away.getTeam());
         match.setScheduledAt(request.scheduledAt());
-        match.setMatchType(resolveMatchType(phase, request.matchType()));
+        match.setMatchType(matchType);
 
         // Remarcar a partida reabre os lembretes: zera as flags de 24h/4h/1h para
         // que disparem de novo conforme o novo horário. A flag de resultado fica.
@@ -468,9 +487,13 @@ public class MatchService {
             TournamentPhase phase,
             Team home,
             Team away,
-            int round
+            int round,
+            Long excludeMatchId
     ) {
-        List<Match> existing = matchRepository.findAllByTieId(tieId);
+        List<Match> existing = matchRepository.findAllByTieId(tieId)
+                .stream()
+                .filter(m -> excludeMatchId == null || !m.getId().equals(excludeMatchId))
+                .toList();
         for (Match other : existing) {
             if (!other.getPhase().getId().equals(phase.getId())) {
                 throw new InvalidMatchException("tieId already belongs to a different phase");

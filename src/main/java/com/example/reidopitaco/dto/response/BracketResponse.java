@@ -1,16 +1,21 @@
 package com.example.reidopitaco.dto.response;
 
+import com.example.reidopitaco.enums.BracketMode;
+
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Representação do chaveamento (mata-mata) de uma fase KNOCKOUT: rodadas → confrontos → pernas.
  * Cada confronto agrupa as pernas que compartilham o mesmo {@code tieId}, com o placar agregado
- * e o vencedor já calculados.
+ * e o vencedor já calculados. {@code bracketMode} indica se as rodadas formam uma árvore fixa
+ * ({@code FIXED_BRACKET} — renderizar como chaveamento) ou se cada rodada é sorteada de novo
+ * ({@code REDRAW_EACH_ROUND} — renderizar como lista de rodadas, sem linhas ligando confrontos).
  */
 public record BracketResponse(
         UUID phaseId,
         String phaseName,
+        BracketMode bracketMode,
         List<BracketRound> rounds
 ) {
     public record BracketRound(

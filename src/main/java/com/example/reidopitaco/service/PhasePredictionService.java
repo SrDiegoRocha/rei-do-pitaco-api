@@ -141,7 +141,7 @@ public class PhasePredictionService {
                 ctx.lockAt(),
                 scoring,
                 toTableTemplate(ctx.table()),
-                toBracketTemplate(ctx.bracket())
+                toBracketTemplate(phase, ctx.bracket())
         );
     }
 
@@ -160,7 +160,10 @@ public class PhasePredictionService {
         return new PhasePredictionTemplateResponse.TableTemplate(table.qualifyingDepth(), blocks);
     }
 
-    private PhasePredictionTemplateResponse.BracketTemplate toBracketTemplate(BracketContext bracket) {
+    private PhasePredictionTemplateResponse.BracketTemplate toBracketTemplate(
+            TournamentPhase phase,
+            BracketContext bracket
+    ) {
         if (bracket == null) {
             return null;
         }
@@ -188,7 +191,7 @@ public class PhasePredictionService {
             ));
         }
         return new PhasePredictionTemplateResponse.BracketTemplate(
-                bracket.hasThirdPlace(), totalRounds, rounds
+                bracket.hasThirdPlace(), phase.getEffectiveBracketMode(), totalRounds, rounds
         );
     }
 
